@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import apiClient from '../shared/api_client';
+import { getResolvedMotionLevel } from '../animation/reducedMotion';
 
 interface DashboardKpis {
   total_vehicles: number;
@@ -83,11 +84,62 @@ export default function DashboardPage() {
   );
 }
 
+function AnimatedKpiValue({ value }: { value: string | number }) {
+  const [displayValue, setDisplayValue] = useState<string | number>(value);
+  const level = getResolvedMotionLevel();
+
+  useEffect(() => {
+    const numericStr = String(value).replace(/[^0-9.]/g, '');
+    const num = parseFloat(numericStr);
+    if (isNaN(num) || level !== 'full') {
+      setDisplayValue(value);
+      return;
+    }
+
+    const prefix = String(value).startsWith('₹') ? '₹' : '';
+    const suffix = String(value).endsWith('%') ? '%' : '';
+
+    const duration = 300;
+    const startTime = performance.now();
+    const startVal = num > 1000 ? num * 0.9 : 0;
+
+    let animId: number;
+    const animate = (now: number) => {
+      const elapsed = now - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      const easedProgress = progress * (2 - progress);
+      const currentVal = startVal + (num - startVal) * easedProgress;
+
+      let formatted = '';
+      if (Number.isInteger(num)) {
+        formatted = Math.floor(currentVal).toLocaleString('en-IN');
+      } else {
+        formatted = currentVal.toFixed(1);
+      }
+
+      setDisplayValue(`${prefix}${formatted}${suffix}`);
+
+      if (progress < 1) {
+        animId = requestAnimationFrame(animate);
+      } else {
+        setDisplayValue(value);
+      }
+    };
+
+    animId = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(animId);
+  }, [value, level]);
+
+  return <>{displayValue}</>;
+}
+
 function KpiCard({ label, value }: { label: string; value: string | number }) {
   return (
     <div className="kpi-card">
       <div className="kpi-card-label">{label}</div>
-      <div className="kpi-card-value">{value}</div>
+      <div className="kpi-card-value" style={{ fontVariantNumeric: 'tabular-nums' }}>
+        <AnimatedKpiValue value={value} />
+      </div>
     </div>
   );
 }

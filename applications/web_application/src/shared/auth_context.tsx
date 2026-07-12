@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, type ReactNode } from 'react';
 import apiClient from '../shared/api_client';
 
 interface User {
