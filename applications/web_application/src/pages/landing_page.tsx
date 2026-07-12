@@ -161,68 +161,136 @@ export default function LandingPage() {
       {/* 8. WebGL OPERATIONAL NETWORK FOOTER */}
       <footer
         style={{
-          background: '#141414',
-          color: '#EDEDEA',
-          minHeight: '50vh',
+          background: 'var(--background-page)',
+          padding: 'var(--space-8) var(--space-6)',
           position: 'relative',
           display: 'flex',
           flexDirection: 'column',
-          justifyContent: 'space-between',
-          padding: 'var(--space-10) var(--space-8)',
-          overflow: 'hidden'
         }}
       >
-        {/* Canvas overlays */}
-        <TransitNetworkCanvas />
+        {/* Main Card Container */}
+        <div
+          style={{
+            background: '#141414',
+            border: '2px solid #FF4630',
+            borderRadius: 'var(--radius-card)',
+            padding: 'var(--space-8) var(--space-8) var(--space-4) var(--space-8)',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'space-between',
+            position: 'relative',
+            overflow: 'hidden',
+            minHeight: '520px',
+            boxSizing: 'border-box',
+          }}
+        >
+          {/* Canvas overlay inside the card */}
+          <TransitNetworkCanvas />
 
-        {/* Footer contents */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 'var(--space-6)', zIndex: 1, pointerEvents: 'auto' }}>
-          <div>
-            <span style={{ fontSize: 'var(--font-size-h3)', fontWeight: 600, color: '#5b87be' }}>
-              TransitOps
-            </span>
-            <p style={{ color: '#8b8b85', fontSize: 'var(--font-size-small)', marginTop: 'var(--space-2)' }}>
-              Swiss-minimal logistics ledger
-            </p>
-          </div>
-
-          <div style={{ display: 'flex', gap: 'var(--space-10)' }}>
+          {/* Top Row: Logo & Columns */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 'var(--space-8)', zIndex: 1, pointerEvents: 'auto' }}>
+            {/* Logo */}
             <div>
-              <h5 style={{ color: '#EDEDEA', fontSize: 'var(--font-size-small)', marginBottom: 'var(--space-3)', fontWeight: 600 }}>Platform</h5>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)', fontSize: 'var(--font-size-small)' }}>
-                <Link to="/login" style={{ color: '#8b8b85' }}>Launch</Link>
-                <Link to="/login" style={{ color: '#8b8b85' }}>Security</Link>
-                <Link to="/login" style={{ color: '#8b8b85' }}>Telemetry</Link>
+              <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 8L6 16L12 24" stroke="#FF4630" strokeWidth="3" strokeLinecap="square" />
+                <path d="M20 8L26 16L20 24" stroke="#FF4630" strokeWidth="3" strokeLinecap="square" />
+              </svg>
+            </div>
+
+            {/* Links Columns Container */}
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '64px' }}>
+              {/* Platform */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+                <h4 style={{ color: '#FF4630', fontSize: 'var(--font-size-body)', fontWeight: 600, letterSpacing: '0.05em', margin: '0 0 var(--space-2) 0', fontFamily: 'var(--font-family)' }}>PLATFORM</h4>
+                <Link to="/login" style={{ color: '#FF4630', textDecoration: 'none', fontSize: 'var(--font-size-small)', fontFamily: 'monospace' }}>↳ LAUNCH LEDGER</Link>
+                <Link to="/login" style={{ color: '#FF4630', textDecoration: 'none', fontSize: 'var(--font-size-small)', fontFamily: 'monospace' }}>↳ TELEMETRY STREAM</Link>
+                <Link to="/login" style={{ color: '#FF4630', textDecoration: 'none', fontSize: 'var(--font-size-small)', fontFamily: 'monospace' }}>↳ CONTROL BOARD</Link>
+              </div>
+
+              {/* Solutions */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+                <h4 style={{ color: '#FF4630', fontSize: 'var(--font-size-body)', fontWeight: 600, letterSpacing: '0.05em', margin: '0 0 var(--space-2) 0', fontFamily: 'var(--font-family)' }}>SOLUTIONS⁴</h4>
+                <span style={{ color: '#FF4630', fontSize: 'var(--font-size-small)', fontFamily: 'monospace' }}>↳ ROUTING ENGINE</span>
+                <span style={{ color: '#FF4630', fontSize: 'var(--font-size-small)', fontFamily: 'monospace' }}>↳ ASSET TELEMETRY</span>
+                <span style={{ color: '#FF4630', fontSize: 'var(--font-size-small)', fontFamily: 'monospace' }}>↳ LEDGER AUDIT</span>
+                <span style={{ color: '#FF4630', fontSize: 'var(--font-size-small)', fontFamily: 'monospace' }}>↳ DISPATCH AUTO</span>
+              </div>
+
+              {/* About */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+                <h4 style={{ color: '#FF4630', fontSize: 'var(--font-size-body)', fontWeight: 600, letterSpacing: '0.05em', margin: '0 0 var(--space-2) 0', fontFamily: 'var(--font-family)' }}>ABOUT²</h4>
+                <Link to="/login" style={{ color: '#FF4630', textDecoration: 'none', fontSize: 'var(--font-size-small)', fontFamily: 'monospace' }}>↳ COMPANY</Link>
+                <Link to="/login" style={{ color: '#FF4630', textDecoration: 'none', fontSize: 'var(--font-size-small)', fontFamily: 'monospace' }}>↳ CAREERS</Link>
+                <Link to="/login" style={{ color: '#FF4630', textDecoration: 'none', fontSize: 'var(--font-size-small)', fontFamily: 'monospace' }}>INSIGHTS</Link>
+                <Link to="/login" style={{ color: '#FF4630', textDecoration: 'none', fontSize: 'var(--font-size-small)', fontFamily: 'monospace' }}>CONTACT</Link>
               </div>
             </div>
-            <div>
-              <h5 style={{ color: '#EDEDEA', fontSize: 'var(--font-size-small)', marginBottom: 'var(--space-3)', fontWeight: 600 }}>Legal</h5>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)', fontSize: 'var(--font-size-small)' }}>
-                <Link to="/login" style={{ color: '#8b8b85' }}>Privacy</Link>
-                <Link to="/login" style={{ color: '#8b8b85' }}>Terms</Link>
-                <Link to="/login" style={{ color: '#8b8b85' }}>WCAG AA</Link>
+          </div>
+
+          {/* Middle Row: Empty / Flag / Address */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 'var(--space-6)', marginTop: 'var(--space-8)', zIndex: 1, pointerEvents: 'auto' }}>
+            <div style={{ flex: 1, minWidth: '120px' }}></div>
+            <div style={{ flex: 1, minWidth: '180px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 'var(--space-2)' }}>
+              <svg width="28" height="18" viewBox="0 0 28 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect width="28" height="6" fill="#FF4630" />
+                <rect y="6" width="28" height="6" fill="none" stroke="#FF4630" strokeWidth="1" />
+                <circle cx="14" cy="9" r="1.8" fill="none" stroke="#FF4630" strokeWidth="1" />
+                <rect y="12" width="28" height="6" fill="#FF4630" />
+              </svg>
+              <div style={{ color: '#FF4630', fontSize: 'var(--font-size-caption)', fontFamily: 'monospace', letterSpacing: '1px', textAlign: 'center', lineHeight: 1.4 }}>
+                FORGED IN INDIA.<br />FOR THE GRID.
+              </div>
+            </div>
+            <div style={{ flex: 1, minWidth: '200px', display: 'flex', justifyContent: 'flex-end' }}>
+              <div style={{ color: '#FF4630', fontSize: 'var(--font-size-caption)', fontFamily: 'monospace', textAlign: 'right', letterSpacing: '1px', lineHeight: 1.4 }}>
+                TRANSITOPS HQ<br />
+                1100 ASHRAM ROAD,<br />
+                STE 2100<br />
+                AHMEDABAD, GJ 380009
               </div>
             </div>
           </div>
-        </div>
 
-        <div style={{ zIndex: 1, pointerEvents: 'auto', margin: 'var(--space-6) 0' }}>
-          <TextReveal
-            tag="h2"
-            pattern="char"
-            text="Keep every operation visible."
-            className="footer-statement"
-            style={{ fontSize: '32px', color: '#5b87be', fontWeight: 600 }}
-          />
-        </div>
+          {/* Big Brand Text */}
+          <div style={{ width: '100%', display: 'flex', justifyContent: 'center', marginTop: 'var(--space-8)', zIndex: 1, pointerEvents: 'none', userSelect: 'none' }}>
+            <h1 style={{
+              fontSize: 'clamp(48px, 14vw, 180px)',
+              fontWeight: 900,
+              color: '#FF4630',
+              letterSpacing: '-0.06em',
+              lineHeight: 0.8,
+              margin: '0 0 -8px 0',
+              fontFamily: 'var(--font-family)',
+              textTransform: 'uppercase',
+            }}>
+              TRANSITOPS
+            </h1>
+          </div>
 
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid #2a2a28', paddingTop: 'var(--space-4)', zIndex: 1, pointerEvents: 'auto', fontSize: 'var(--font-size-caption)', color: '#5e5e5a' }}>
-          <span>© 2026 TransitOps. All rights reserved.</span>
-          <MagneticElement>
-            <a href="mailto:ops@transitops.io" style={{ color: '#5b87be', fontWeight: 'bold' }}>
-              ops@transitops.io →
-            </a>
-          </MagneticElement>
+          {/* Bottom metadata */}
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: 'var(--space-4)',
+            fontSize: 'var(--font-size-caption)',
+            color: '#FF4630',
+            fontFamily: 'monospace',
+            letterSpacing: '1px',
+            borderTop: '1px solid #FF4630',
+            paddingTop: 'var(--space-4)',
+            marginTop: 'var(--space-6)',
+            zIndex: 1,
+            pointerEvents: 'auto',
+          }}>
+            <span>©2026 TRANSITOPS, INC.</span>
+            <div style={{ display: 'flex', gap: 'var(--space-6)', flexWrap: 'wrap' }}>
+              <Link to="/login" style={{ color: 'inherit', textDecoration: 'none' }}>LICENSE AGREEMENT</Link>
+              <Link to="/login" style={{ color: 'inherit', textDecoration: 'none' }}>PRIVACY POLICY</Link>
+              <Link to="/login" style={{ color: 'inherit', textDecoration: 'none' }}>TERMS OF USE</Link>
+            </div>
+          </div>
         </div>
       </footer>
     </PageTransition>
