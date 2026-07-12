@@ -216,3 +216,8 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+#project-index
+.project-indexrc.json
+.agents
+.project-index
