@@ -13,6 +13,9 @@ from sqlalchemy.orm import Session
 from source.application_startup.database_connection import get_database_session
 from source.shared_infrastructure.database_models.user_account_model import UserAccount
 from source.shared_infrastructure.role_based_access_control import get_current_authenticated_user
+from source.shared_infrastructure.transit_ops_email_notifications import (
+    notify_user_of_successful_login,
+)
 
 from source.modules.user_authentication.authenticate_user_credentials import (
     authenticate_user_credentials,
@@ -50,6 +53,7 @@ def login(
         )
 
     access_token, expires_in_seconds = create_access_token(authenticated_user.email)
+    notify_user_of_successful_login(authenticated_user)
 
     return UserLoginResult(
         access_token=access_token,
