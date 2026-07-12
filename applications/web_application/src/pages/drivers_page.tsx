@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react';
 import apiClient from '../shared/api_client';
 import { useAuth } from '../shared/auth_context';
+import ConfirmationDialog from '../shared/confirmation_dialog';
+import FeedbackCard from '../shared/feedback_card';
+import { getApiErrorMessage } from '../shared/api_error_message';
 
 interface Driver {
   id: number; name: string; license_number: string; license_category: string;
@@ -13,24 +16,52 @@ export default function DriversPage() {
   const [drivers, setDrivers] = useState<Driver[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
+  const [editingDriverId, setEditingDriverId] = useState<number | null>(null);
+  const [driverPendingDeletion, setDriverPendingDeletion] = useState<Driver | null>(null);
+  const [feedbackMessage, setFeedbackMessage] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
   const [form, setForm] = useState({ name: '', license_number: '', license_category: 'LMV-TR', license_expiry_date: '', contact_number: '', safety_score: '100' });
   const canWrite = user?.role === 'fleet_manager' || user?.role === 'safety_officer';
 
-  const fetchDrivers = () => { apiClient.get('/drivers').then(r => setDrivers(r.data)).catch(console.error).finally(() => setLoading(false)); };
+  const fetchDrivers = () => { apiClient.get('/drivers').then(r => setDrivers(r.data)).catch(error => setFeedbackMessage(getApiErrorMessage(error, 'Drivers could not be loaded.'))).finally(() => setLoading(false)); };
   useEffect(fetchDrivers, []);
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
-    await apiClient.post('/drivers', { ...form, safety_score: +form.safety_score });
-    setShowForm(false);
-    setForm({ name: '', license_number: '', license_category: 'LMV-TR', license_expiry_date: '', contact_number: '', safety_score: '100' });
-    fetchDrivers();
+    try {
+      const driverPayload = { ...form, safety_score: +form.safety_score };
+      if (editingDriverId === null) await apiClient.post('/drivers', driverPayload);
+      else await apiClient.put(`/drivers/${editingDriverId}`, driverPayload);
+      setShowForm(false);
+      setEditingDriverId(null);
+      setForm({ name: '', license_number: '', license_category: 'LMV-TR', license_expiry_date: '', contact_number: '', safety_score: '100' });
+      fetchDrivers();
+    } catch (error) { setFeedbackMessage(getApiErrorMessage(error, editingDriverId === null ? 'Driver could not be created.' : 'Driver could not be updated.')); }
   };
 
-  const handleDelete = async (id: number) => {
-    if (!confirm('Delete this driver?')) return;
-    await apiClient.delete(`/drivers/${id}`);
-    fetchDrivers();
+  const openCreateForm = () => {
+    setEditingDriverId(null);
+    setForm({ name: '', license_number: '', license_category: 'LMV-TR', license_expiry_date: '', contact_number: '', safety_score: '100' });
+    setShowForm(true);
+  };
+
+  const openEditForm = (driver: Driver) => {
+    setEditingDriverId(driver.id);
+    setForm({ name: driver.name, license_number: driver.license_number, license_category: driver.license_category, license_expiry_date: driver.license_expiry_date, contact_number: driver.contact_number, safety_score: String(driver.safety_score) });
+    setShowForm(true);
+  };
+
+  const handleDelete = async () => {
+    if (!driverPendingDeletion) return;
+    setIsDeleting(true);
+    try {
+      await apiClient.delete(`/drivers/${driverPendingDeletion.id}`);
+      setDriverPendingDeletion(null);
+      fetchDrivers();
+    } catch (error) {
+      setFeedbackMessage(getApiErrorMessage(error, 'Driver could not be deleted.'));
+      setDriverPendingDeletion(null);
+    } finally { setIsDeleting(false); }
   };
 
   if (loading) return <div className="page-content"><p className="text-muted">Loading...</p></div>;
@@ -40,12 +71,14 @@ export default function DriversPage() {
       <div className="topbar">
         <h2 className="topbar-title">Drivers</h2>
         <div className="topbar-actions">
-          {canWrite && <button className="button button-primary" onClick={() => setShowForm(!showForm)}>+ Add Driver</button>}
+          {canWrite && <button className="button button-primary" onClick={openCreateForm}>+ Add Driver</button>}
         </div>
       </div>
       <div className="page-content">
+        <FeedbackCard message={feedbackMessage} onDismiss={() => setFeedbackMessage('')} />
         {showForm && (
           <div className="card mb-6">
+            <h3 className="card-title mb-4">{editingDriverId === null ? 'New Driver' : 'Edit Driver'}</h3>
             <form onSubmit={handleCreate}>
               <div className="form-row">
                 <div className="form-group"><label className="form-label">Full Name</label><input className="form-input" value={form.name} onChange={e => setForm({...form, name: e.target.value})} required /></div>
@@ -60,8 +93,8 @@ export default function DriversPage() {
                 <div className="form-group"><label className="form-label">Safety Score (0-100)</label><input className="form-input" type="number" min="0" max="100" value={form.safety_score} onChange={e => setForm({...form, safety_score: e.target.value})} /></div>
               </div>
               <div style={{display:'flex',gap:'var(--space-3)',marginTop:'var(--space-3)'}}>
-                <button type="submit" className="button button-primary">Create</button>
-                <button type="button" className="button button-secondary" onClick={()=>setShowForm(false)}>Cancel</button>
+                <button type="submit" className="button button-primary">{editingDriverId === null ? 'Create' : 'Save changes'}</button>
+                <button type="button" className="button button-secondary" onClick={()=>{setShowForm(false);setEditingDriverId(null);}}>Cancel</button>
               </div>
             </form>
           </div>
@@ -80,7 +113,7 @@ export default function DriversPage() {
                     <td>{d.contact_number}</td>
                     <td><span style={{fontWeight:500,color:d.safety_score >= 80 ? 'var(--state-available-text)' : d.safety_score >= 50 ? 'var(--state-in-shop-text)' : 'var(--state-suspended-text)'}}>{d.safety_score}</span></td>
                     <td><span className={`status-badge status-badge-${d.status}`}>{d.status.replace('_',' ')}</span></td>
-                    {canWrite && <td><button className="button button-small button-danger" onClick={()=>handleDelete(d.id)}>Delete</button></td>}
+                    {canWrite && <td><div className="table-actions"><button className="button button-small button-secondary" onClick={()=>openEditForm(d)}>Edit</button><button className="button button-small button-danger" onClick={()=>setDriverPendingDeletion(d)}>Delete</button></div></td>}
                   </tr>
                 ))}
                 {drivers.length === 0 && <tr><td colSpan={8} className="data-table-empty">No drivers found</td></tr>}
@@ -89,6 +122,7 @@ export default function DriversPage() {
           </div>
         </div>
       </div>
+      {driverPendingDeletion && <ConfirmationDialog title="Delete driver?" message={`Delete ${driverPendingDeletion.name}? Drivers with trip history must be retained and cannot be deleted.`} confirmLabel="Delete driver" isProcessing={isDeleting} onConfirm={handleDelete} onCancel={() => setDriverPendingDeletion(null)} />}
     </>
   );
 }

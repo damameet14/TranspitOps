@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react';
 import apiClient from '../shared/api_client';
 import { useAuth } from '../shared/auth_context';
+import ConfirmationDialog from '../shared/confirmation_dialog';
+import FeedbackCard from '../shared/feedback_card';
+import { getApiErrorMessage } from '../shared/api_error_message';
 
 interface Trip {
   id: number; source: string; destination: string; vehicle_id: number; driver_id: number;
@@ -19,6 +22,9 @@ export default function TripsPage() {
   const [trips, setTrips] = useState<Trip[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
+  const [tripPendingCancellation, setTripPendingCancellation] = useState<Trip | null>(null);
+  const [feedbackMessage, setFeedbackMessage] = useState('');
+  const [isProcessing, setIsProcessing] = useState(false);
   const [vehicles, setVehicles] = useState<VehicleOption[]>([]);
   const [drivers, setDrivers] = useState<DriverOption[]>([]);
   const [routeSuggestion, setRouteSuggestion] = useState<RouteSuggestion | null>(null);
@@ -26,13 +32,14 @@ export default function TripsPage() {
   const [form, setForm] = useState({ source: '', destination: '', vehicle_id: '', driver_id: '', cargo_weight_kg: '', planned_distance_km: '', revenue: '' });
   const canWrite = user?.role === 'fleet_manager' || user?.role === 'driver';
 
-  const fetchTrips = () => { apiClient.get('/trips').then(r => setTrips(r.data)).catch(console.error).finally(() => setLoading(false)); };
+  const fetchTrips = () => { apiClient.get('/trips').then(r => setTrips(r.data)).catch(error => setFeedbackMessage(getApiErrorMessage(error, 'Trips could not be loaded.'))).finally(() => setLoading(false)); };
   useEffect(fetchTrips, []);
 
   const openForm = async () => {
-    const [v, d] = await Promise.all([apiClient.get('/vehicles/available'), apiClient.get('/drivers/available')]);
-    setVehicles(v.data); setDrivers(d.data);
-    setShowForm(true);
+    try {
+      const [v, d] = await Promise.all([apiClient.get('/vehicles/available'), apiClient.get('/drivers/available')]);
+      setVehicles(v.data); setDrivers(d.data); setShowForm(true);
+    } catch (error) { setFeedbackMessage(getApiErrorMessage(error, 'Available resources could not be loaded.')); }
   };
 
   const handleSuggestRoute = async () => {
@@ -41,29 +48,35 @@ export default function TripsPage() {
       const r = await apiClient.post('/routes/suggest', { source: form.source, destination: form.destination });
       setRouteSuggestion(r.data);
       setForm(f => ({ ...f, planned_distance_km: String(r.data.suggested_distance_km) }));
-    } catch { setRouteSuggestion(null); }
+    } catch (error) { setRouteSuggestion(null); setFeedbackMessage(getApiErrorMessage(error, 'A route could not be suggested.')); }
   };
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
-    await apiClient.post('/trips', { ...form, vehicle_id: +form.vehicle_id, driver_id: +form.driver_id, cargo_weight_kg: +form.cargo_weight_kg, planned_distance_km: +form.planned_distance_km, revenue: +form.revenue });
-    setShowForm(false); setRouteSuggestion(null);
-    setForm({ source: '', destination: '', vehicle_id: '', driver_id: '', cargo_weight_kg: '', planned_distance_km: '', revenue: '' });
-    fetchTrips();
+    try {
+      await apiClient.post('/trips', { ...form, vehicle_id: +form.vehicle_id, driver_id: +form.driver_id, cargo_weight_kg: +form.cargo_weight_kg, planned_distance_km: +form.planned_distance_km, revenue: +form.revenue });
+      setShowForm(false); setRouteSuggestion(null);
+      setForm({ source: '', destination: '', vehicle_id: '', driver_id: '', cargo_weight_kg: '', planned_distance_km: '', revenue: '' });
+      fetchTrips();
+    } catch (error) { setFeedbackMessage(getApiErrorMessage(error, 'Trip could not be created.')); }
   };
 
-  const handleDispatch = async (id: number) => { await apiClient.post(`/trips/${id}/dispatch`); fetchTrips(); };
-  const handleCancel = async (id: number) => { if(confirm('Cancel this trip?')) { await apiClient.post(`/trips/${id}/cancel`); fetchTrips(); }};
+  const handleDispatch = async (id: number) => { try { await apiClient.post(`/trips/${id}/dispatch`); fetchTrips(); } catch (error) { setFeedbackMessage(getApiErrorMessage(error, 'Trip could not be dispatched.')); } };
+  const handleCancel = async () => {
+    if (!tripPendingCancellation) return;
+    setIsProcessing(true);
+    try { await apiClient.post(`/trips/${tripPendingCancellation.id}/cancel`); setTripPendingCancellation(null); fetchTrips(); }
+    catch (error) { setFeedbackMessage(getApiErrorMessage(error, 'Trip could not be cancelled.')); setTripPendingCancellation(null); }
+    finally { setIsProcessing(false); }
+  };
 
   const handleComplete = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!completeTrip) return;
-    await apiClient.post(`/trips/${completeTrip.id}/complete`, {
-      final_odometer_km: +completeTrip.form.final_odometer_km,
-      fuel_consumed_liters: +completeTrip.form.fuel_consumed_liters,
-      actual_distance_km: +completeTrip.form.actual_distance_km,
-    });
-    setCompleteTrip(null); fetchTrips();
+    try {
+      await apiClient.post(`/trips/${completeTrip.id}/complete`, { final_odometer_km: +completeTrip.form.final_odometer_km, fuel_consumed_liters: +completeTrip.form.fuel_consumed_liters, actual_distance_km: +completeTrip.form.actual_distance_km });
+      setCompleteTrip(null); fetchTrips();
+    } catch (error) { setFeedbackMessage(getApiErrorMessage(error, 'Trip could not be completed.')); }
   };
 
   if (loading) return <div className="page-content"><p className="text-muted">Loading...</p></div>;
@@ -77,6 +90,7 @@ export default function TripsPage() {
         </div>
       </div>
       <div className="page-content">
+        <FeedbackCard message={feedbackMessage} onDismiss={() => setFeedbackMessage('')} />
         {showForm && (
           <div className="card mb-6">
             <h3 className="card-title mb-4">New Trip</h3>
@@ -158,7 +172,7 @@ export default function TripsPage() {
                     {canWrite && <td className="data-table-actions">
                       {t.status === 'draft' && <button className="button button-small button-primary" onClick={()=>handleDispatch(t.id)}>Dispatch</button>}
                       {t.status === 'dispatched' && <button className="button button-small button-primary" onClick={()=>setCompleteTrip({id:t.id,form:{final_odometer_km:'',fuel_consumed_liters:'',actual_distance_km:''}})}>Complete</button>}
-                      {(t.status === 'draft' || t.status === 'dispatched') && <button className="button button-small button-danger" onClick={()=>handleCancel(t.id)}>Cancel</button>}
+                      {(t.status === 'draft' || t.status === 'dispatched') && <button className="button button-small button-danger" onClick={()=>setTripPendingCancellation(t)}>Cancel</button>}
                     </td>}
                   </tr>
                 ))}
@@ -168,6 +182,7 @@ export default function TripsPage() {
           </div>
         </div>
       </div>
+      {tripPendingCancellation && <ConfirmationDialog title="Cancel trip?" message={`Cancel trip #${tripPendingCancellation.id} from ${tripPendingCancellation.source} to ${tripPendingCancellation.destination}? This follows the trip state-transition rules and cannot be undone.`} confirmLabel="Cancel trip" isProcessing={isProcessing} onConfirm={handleCancel} onCancel={() => setTripPendingCancellation(null)} />}
     </>
   );
 }

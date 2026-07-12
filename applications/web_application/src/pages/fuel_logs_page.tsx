@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import apiClient from '../shared/api_client';
+import FeedbackCard from '../shared/feedback_card';
+import { getApiErrorMessage } from '../shared/api_error_message';
 
 interface FuelLog {
   id: number; vehicle_id: number; trip_id: number | null; liters: number; cost: number;
@@ -9,9 +11,10 @@ interface FuelLog {
 export default function FuelLogsPage() {
   const [logs, setLogs] = useState<FuelLog[]>([]);
   const [loading, setLoading] = useState(true);
+  const [feedbackMessage, setFeedbackMessage] = useState('');
 
   useEffect(() => {
-    apiClient.get('/fuel-logs').then(r => setLogs(r.data)).catch(console.error).finally(() => setLoading(false));
+    apiClient.get('/fuel-logs').then(r => setLogs(r.data)).catch(error => setFeedbackMessage(getApiErrorMessage(error, 'Fuel logs could not be loaded.'))).finally(() => setLoading(false));
   }, []);
 
   if (loading) return <div className="page-content"><p className="text-muted">Loading...</p></div>;
@@ -20,6 +23,7 @@ export default function FuelLogsPage() {
     <>
       <div className="topbar"><h2 className="topbar-title">Fuel Logs</h2></div>
       <div className="page-content">
+        <FeedbackCard message={feedbackMessage} onDismiss={() => setFeedbackMessage('')} />
         <div className="card">
           <div className="data-table-container">
             <table className="data-table">
