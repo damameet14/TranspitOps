@@ -178,62 +178,70 @@ export default function HorizontalStory() {
           </div>
         </div>
 
-        {/* Right Side: Horizontal scrolling panels */}
-        <div
-          ref={containerRef}
-          style={{
-            width: '65%',
-            display: 'flex',
-            height: '100%',
-            alignItems: 'center',
-            background: 'var(--background-page)',
-          }}
-        >
-          {PANELS.map((panel, idx) => (
-            <div
-              key={idx}
-              className="horizontal-panel"
-              style={{
-                width: `${100 / PANELS.length}%`,
-                padding: '0 var(--space-8)',
-                boxSizing: 'border-box',
-                display: 'flex',
-                justifyContent: 'center',
-              }}
-            >
+        {/* Right Side Viewport (Overflow hidden, width 65%) */}
+        <div style={{
+          width: '65%',
+          height: '100%',
+          overflow: 'hidden',
+          position: 'relative',
+          background: 'var(--background-page)',
+        }}>
+          {/* Scroll Track (This is animated by GSAP) */}
+          <div
+            ref={containerRef}
+            style={{
+              display: 'flex',
+              width: `${PANELS.length * 100}%`,
+              height: '100%',
+              alignItems: 'center',
+            }}
+          >
+            {PANELS.map((panel, idx) => (
               <div
+                key={idx}
+                className="horizontal-panel"
                 style={{
-                  width: 'min(520px, 90%)',
-                  background: 'var(--background-surface)',
-                  border: '1px solid var(--border)',
-                  borderLeft: activeIndex === idx ? '4px solid var(--accent)' : '1px solid var(--border)',
-                  borderRadius: 0, // Sharp Swiss corners
-                  padding: 'var(--space-8)',
+                  width: `${100 / PANELS.length}%`,
+                  padding: '0 var(--space-8)',
                   boxSizing: 'border-box',
-                  boxShadow: activeIndex === idx ? '0 10px 30px rgba(0,0,0,0.05)' : 'none',
-                  transition: 'border-left-width 0.2s, border-left-color 0.2s, box-shadow 0.3s'
+                  display: 'flex',
+                  justifyContent: 'center',
                 }}
               >
-                <span style={{ fontSize: 'var(--font-size-caption)', color: activeIndex === idx ? 'var(--accent)' : 'var(--text-muted)', fontWeight: 'bold', fontFamily: 'monospace' }}>
-                  SPECIFICATION 0{idx + 1}
-                </span>
-                <h4 style={{
-                  fontSize: 'var(--font-size-h2)',
-                  margin: 'var(--space-3) 0 var(--space-4) 0',
-                  fontWeight: 600,
-                  textTransform: 'uppercase',
-                  letterSpacing: '-0.02em',
-                  color: activeIndex === idx ? 'var(--accent)' : 'var(--text-primary)',
-                  transition: 'color 0.2s'
-                }}>
-                  {panel.title}
-                </h4>
-                <p className="text-secondary" style={{ fontSize: 'var(--font-size-body)', lineHeight: 1.6, margin: 0 }}>
-                  {panel.desc}
-                </p>
+                <div
+                  style={{
+                    width: 'min(520px, 90%)',
+                    background: 'var(--background-surface)',
+                    border: '1px solid var(--border)',
+                    borderLeft: activeIndex === idx ? '4px solid var(--accent)' : '1px solid var(--border)',
+                    borderRadius: 0, // Sharp Swiss corners
+                    padding: 'var(--space-8)',
+                    boxSizing: 'border-box',
+                    boxShadow: activeIndex === idx ? '0 10px 30px rgba(0,0,0,0.05)' : 'none',
+                    transition: 'border-left-width 0.2s, border-left-color 0.2s, box-shadow 0.3s'
+                  }}
+                >
+                  <span style={{ fontSize: 'var(--font-size-caption)', color: activeIndex === idx ? 'var(--accent)' : 'var(--text-muted)', fontWeight: 'bold', fontFamily: 'monospace' }}>
+                    SPECIFICATION 0{idx + 1}
+                  </span>
+                  <h4 style={{
+                    fontSize: 'var(--font-size-h2)',
+                    margin: 'var(--space-3) 0 var(--space-4) 0',
+                    fontWeight: 600,
+                    textTransform: 'uppercase',
+                    letterSpacing: '-0.02em',
+                    color: activeIndex === idx ? 'var(--accent)' : 'var(--text-primary)',
+                    transition: 'color 0.2s'
+                  }}>
+                    {panel.title}
+                  </h4>
+                  <p className="text-secondary" style={{ fontSize: 'var(--font-size-body)', lineHeight: 1.6, margin: 0 }}>
+                    {panel.desc}
+                  </p>
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
     </div>
