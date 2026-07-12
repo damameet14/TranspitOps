@@ -1,0 +1,55 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: transitops_postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-transitops}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-transitops_dev_2026}
+      POSTGRES_DB: ${POSTGRES_DB:-transitops}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-transitops}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./applications/backend_application
+      dockerfile: Dockerfile
+    container_name: transitops_backend
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgresql://transitops:transitops_dev_2026@postgres:5432/transitops}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-change-this-to-a-random-secret-in-production}
+      ROUTE_PROVIDER: ${ROUTE_PROVIDER:-rule_based}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./applications/backend_application:/application
+    command: uvicorn source.application_startup.create_application:application --host 0.0.0.0 --port 8000 --reload
+
+  frontend:
+    build:
+      context: ./applications/web_application
+      dockerfile: Dockerfile
+    container_name: transitops_frontend
+    ports:
+      - "5173:5173"
+    environment:
+      VITE_API_URL: ${VITE_API_URL:-http://localhost:8000/api}
+    volumes:
+      - ./applications/web_application:/application
+      - frontend_node_modules:/application/node_modules
+    command: npm run dev -- --host 0.0.0.0
+
+volumes:
+  postgres_data:
+  frontend_node_modules:
