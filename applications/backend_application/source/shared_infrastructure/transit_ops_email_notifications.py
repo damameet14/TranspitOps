@@ -74,6 +74,21 @@ def notify_driver_of_trip_status_change(
     )
 
 
+def notify_driver_of_license_expiry(driver: Driver, days_remaining: int) -> BrevoEmailDeliveryResult:
+    """Send a controlled reminder for an expired or soon-expiring license."""
+    state = "expired" if days_remaining < 0 else f"expires in {days_remaining} day(s)"
+    html_content = _build_email_html(
+        heading="Driver license expiry reminder",
+        greeting_name=driver.name,
+        message=f"Your registered driving license {state}.",
+        details={"License": driver.license_number, "Expiry date": str(driver.license_expiry_date), "Status": state},
+        action_url=f"{_frontend_url()}/drivers",
+        action_label="Review driver profile",
+        closing_message="Renew the license before accepting another trip assignment.",
+    )
+    return _safely_send_email(BrevoEmailRequest(recipient_name=driver.name, recipient_email=driver.email, subject="TransitOps driver license expiry reminder", html_content=html_content))
+
+
 def _notify_trip_recipient(
     recipient_name: str,
     recipient_email: str,

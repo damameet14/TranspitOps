@@ -15,7 +15,7 @@ Role restrictions:
     Financial Analyst: read-only
 """
 
-from datetime import date
+from datetime import date, timedelta
 from typing import Annotated
 
 from fastapi import APIRouter, Depends
@@ -27,6 +27,8 @@ from source.shared_infrastructure.role_based_access_control import (
     get_current_authenticated_user,
     require_role,
 )
+from source.shared_infrastructure.transit_ops_email_notifications import notify_driver_of_license_expiry
+from source.shared_infrastructure.database_models.driver_model import Driver
 
 from source.modules.driver_management.driver_management_contracts import (
     CreateDriverRequest,
@@ -67,6 +69,23 @@ def list_available_drivers(
     """List drivers eligible for trip assignment (available, valid license, not on trip)."""
     drivers = retrieve_available_drivers(database_session)
     return [_driver_to_response(driver) for driver in drivers]
+
+
+@driver_management_router.post("/license-reminders")
+def send_license_expiry_reminders(
+    current_user: Annotated[UserAccount, Depends(require_role(UserRole.FLEET_MANAGER, UserRole.SAFETY_OFFICER))],
+    database_session: Annotated[Session, Depends(get_database_session)],
+    days: int = 30,
+) -> dict[str, int]:
+    """Email drivers whose license is expired or expires within the requested window."""
+    today = date.today()
+    drivers = database_session.query(Driver).filter(Driver.license_expiry_date <= today + timedelta(days=max(0, min(days, 365)))).all()
+    sent = 0
+    for driver in drivers:
+        result = notify_driver_of_license_expiry(driver, (driver.license_expiry_date - today).days)
+        if result.was_successful:
+            sent += 1
+    return {"eligible": len(drivers), "sent": sent, "failed": len(drivers) - sent}
 
 
 @driver_management_router.get("/{driver_id}", response_model=DriverResponse)

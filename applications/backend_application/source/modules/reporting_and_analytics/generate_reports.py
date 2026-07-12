@@ -25,6 +25,8 @@ from source.modules.reporting_and_analytics.reporting_contracts import (
     ReportFilterRequest,
     TripSummaryReport,
     TripSummaryRow,
+    VehicleProfitabilityReport,
+    VehicleProfitabilityRow,
 )
 
 
@@ -69,7 +71,12 @@ def generate_trip_summary_report(
     grand_total_fuel_cost = 0.0
 
     for row in results:
-        fuel_cost = float(row.total_fuel) * 100  # ₹100/liter default
+        fuel_cost_query = database_session.query(func.coalesce(func.sum(FuelLog.cost), 0)).filter(FuelLog.vehicle_id == row.id)
+        if filters.start_date:
+            fuel_cost_query = fuel_cost_query.filter(FuelLog.log_date >= filters.start_date)
+        if filters.end_date:
+            fuel_cost_query = fuel_cost_query.filter(FuelLog.log_date <= filters.end_date)
+        fuel_cost = float(fuel_cost_query.scalar() or 0)
         total_fuel = float(row.total_fuel)
         total_dist = float(row.total_distance)
         avg_efficiency = (total_dist / total_fuel) if total_fuel > 0 else 0
@@ -246,3 +253,37 @@ def generate_maintenance_cost_report(
         grand_total_cost=grand_total_cost,
         total_records=total_records,
     )
+
+
+def generate_vehicle_profitability_report(database_session: Session, filters: ReportFilterRequest) -> VehicleProfitabilityReport:
+    """Combine revenue, fuel, maintenance, and other expenses into vehicle ROI."""
+    vehicle_query = database_session.query(Vehicle)
+    if filters.vehicle_id:
+        vehicle_query = vehicle_query.filter(Vehicle.id == filters.vehicle_id)
+    if filters.region:
+        vehicle_query = vehicle_query.filter(Vehicle.region == filters.region)
+    rows: list[VehicleProfitabilityRow] = []
+    for vehicle in vehicle_query.order_by(Vehicle.registration_number).all():
+        trip_query = database_session.query(func.coalesce(func.sum(Trip.revenue), 0)).filter(Trip.vehicle_id == vehicle.id, Trip.status == TripStatus.COMPLETED)
+        fuel_query = database_session.query(func.coalesce(func.sum(FuelLog.cost), 0)).filter(FuelLog.vehicle_id == vehicle.id)
+        maintenance_query = database_session.query(func.coalesce(func.sum(MaintenanceLog.cost), 0)).filter(MaintenanceLog.vehicle_id == vehicle.id)
+        expense_query = database_session.query(func.coalesce(func.sum(Expense.amount), 0)).filter(Expense.vehicle_id == vehicle.id)
+        if filters.start_date:
+            trip_query = trip_query.filter(Trip.completed_at >= filters.start_date)
+            fuel_query = fuel_query.filter(FuelLog.log_date >= filters.start_date)
+            maintenance_query = maintenance_query.filter(MaintenanceLog.created_at >= filters.start_date)
+            expense_query = expense_query.filter(Expense.expense_date >= filters.start_date)
+        if filters.end_date:
+            trip_query = trip_query.filter(Trip.completed_at <= filters.end_date)
+            fuel_query = fuel_query.filter(FuelLog.log_date <= filters.end_date)
+            maintenance_query = maintenance_query.filter(MaintenanceLog.created_at <= filters.end_date)
+            expense_query = expense_query.filter(Expense.expense_date <= filters.end_date)
+        revenue = float(trip_query.scalar() or 0)
+        fuel_cost = float(fuel_query.scalar() or 0)
+        maintenance_cost = float(maintenance_query.scalar() or 0)
+        other_expenses = float(expense_query.scalar() or 0)
+        total_cost = fuel_cost + maintenance_cost + other_expenses
+        net_profit = revenue - total_cost
+        acquisition_cost = float(vehicle.acquisition_cost or 0)
+        rows.append(VehicleProfitabilityRow(vehicle_id=vehicle.id, vehicle_registration_number=vehicle.registration_number, vehicle_name_model=vehicle.name_model, revenue=revenue, fuel_cost=fuel_cost, maintenance_cost=maintenance_cost, other_expenses=other_expenses, total_operational_cost=total_cost, net_profit=net_profit, roi_percent=round((net_profit / acquisition_cost * 100) if acquisition_cost > 0 else 0, 2)))
+    return VehicleProfitabilityReport(rows=rows, total_revenue=sum(row.revenue for row in rows), total_operational_cost=sum(row.total_operational_cost for row in rows), total_net_profit=sum(row.net_profit for row in rows))

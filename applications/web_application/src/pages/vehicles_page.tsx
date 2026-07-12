@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import apiClient from '../shared/api_client';
 import { useAuth } from '../shared/auth_context';
 import ConfirmationDialog from '../shared/confirmation_dialog';
@@ -20,7 +20,8 @@ export default function VehiclesPage() {
   const [vehiclePendingDeletion, setVehiclePendingDeletion] = useState<Vehicle | null>(null);
   const [feedbackMessage, setFeedbackMessage] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
-  const [form, setForm] = useState({ registration_number: '', name_model: '', type: 'truck', max_load_capacity_kg: '', odometer_km: '0', acquisition_cost: '0', region: '' });
+  const [search, setSearch] = useState('');
+  const [form, setForm] = useState({ registration_number: '', name_model: '', type: 'truck', max_load_capacity_kg: '', odometer_km: '0', acquisition_cost: '0', region: '', status:'available' });
   const canWrite = user?.role === 'fleet_manager';
 
   const fetchVehicles = () => {
@@ -36,22 +37,23 @@ export default function VehiclesPage() {
       else await apiClient.put(`/vehicles/${editingVehicleId}`, vehiclePayload);
       setShowForm(false);
       setEditingVehicleId(null);
-      setForm({ registration_number: '', name_model: '', type: 'truck', max_load_capacity_kg: '', odometer_km: '0', acquisition_cost: '0', region: '' });
+      setForm({ registration_number: '', name_model: '', type: 'truck', max_load_capacity_kg: '', odometer_km: '0', acquisition_cost: '0', region: '', status:'available' });
       fetchVehicles();
     } catch (error) { setFeedbackMessage(getApiErrorMessage(error, editingVehicleId === null ? 'Vehicle could not be created.' : 'Vehicle could not be updated.')); }
   };
 
   const openCreateForm = () => {
     setEditingVehicleId(null);
-    setForm({ registration_number: '', name_model: '', type: 'truck', max_load_capacity_kg: '', odometer_km: '0', acquisition_cost: '0', region: '' });
+    setForm({ registration_number: '', name_model: '', type: 'truck', max_load_capacity_kg: '', odometer_km: '0', acquisition_cost: '0', region: '', status:'available' });
     setShowForm(true);
   };
 
   const openEditForm = (vehicle: Vehicle) => {
     setEditingVehicleId(vehicle.id);
-    setForm({ registration_number: vehicle.registration_number, name_model: vehicle.name_model, type: vehicle.type, max_load_capacity_kg: String(vehicle.max_load_capacity_kg), odometer_km: String(vehicle.odometer_km), acquisition_cost: String(vehicle.acquisition_cost), region: vehicle.region ?? '' });
+    setForm({ registration_number: vehicle.registration_number, name_model: vehicle.name_model, type: vehicle.type, max_load_capacity_kg: String(vehicle.max_load_capacity_kg), odometer_km: String(vehicle.odometer_km), acquisition_cost: String(vehicle.acquisition_cost), region: vehicle.region ?? '', status:vehicle.status });
     setShowForm(true);
   };
+  const filteredVehicles = useMemo(()=>vehicles.filter(vehicle=>`${vehicle.registration_number} ${vehicle.name_model} ${vehicle.type} ${vehicle.region??''} ${vehicle.status}`.toLowerCase().includes(search.toLowerCase())),[vehicles,search]);
 
   const handleDelete = async () => {
     if (!vehiclePendingDeletion) return;
@@ -86,6 +88,7 @@ export default function VehiclesPage() {
                 <div className="form-group"><label className="form-label">Registration No.</label><input className="form-input" value={form.registration_number} onChange={e => setForm({...form, registration_number: e.target.value})} required /></div>
                 <div className="form-group"><label className="form-label">Model Name</label><input className="form-input" value={form.name_model} onChange={e => setForm({...form, name_model: e.target.value})} required /></div>
               </div>
+              {editingVehicleId !== null && <div className="form-row"><div className="form-group"><label className="form-label">Operational Status</label><select className="form-select" value={form.status} onChange={e=>setForm({...form,status:e.target.value})} disabled={form.status==='on_trip'||form.status==='in_shop'}><option value="available">Available</option><option value="retired">Retired</option>{form.status==='on_trip'&&<option value="on_trip">On trip (workflow controlled)</option>}{form.status==='in_shop'&&<option value="in_shop">In shop (workflow controlled)</option>}</select></div></div>}
               <div className="form-row">
                 <div className="form-group"><label className="form-label">Type</label><select className="form-select" value={form.type} onChange={e => setForm({...form, type: e.target.value})}><option value="truck">Truck</option><option value="van">Van</option><option value="bike">Bike</option><option value="other">Other</option></select></div>
                 <div className="form-group"><label className="form-label">Max Load (kg)</label><input className="form-input" type="number" value={form.max_load_capacity_kg} onChange={e => setForm({...form, max_load_capacity_kg: e.target.value})} required /></div>
@@ -102,11 +105,12 @@ export default function VehiclesPage() {
           </div>
         )}
         <div className="card">
+          <div className="card-header"><input className="form-input" style={{maxWidth:380}} placeholder="Search registration, model, region or status..." value={search} onChange={e=>setSearch(e.target.value)}/></div>
           <div className="data-table-container">
             <table className="data-table">
               <thead><tr><th>Registration</th><th>Model</th><th>Type</th><th>Capacity (kg)</th><th>Odometer (km)</th><th>Region</th><th>Status</th>{canWrite && <th>Actions</th>}</tr></thead>
               <tbody>
-                {vehicles.map(v => (
+                {filteredVehicles.map(v => (
                   <tr key={v.id}>
                     <td style={{fontWeight:500}}>{v.registration_number}</td>
                     <td>{v.name_model}</td>
@@ -118,7 +122,7 @@ export default function VehiclesPage() {
                     {canWrite && <td><div className="table-actions"><button className="button button-small button-secondary" onClick={()=>openEditForm(v)}>Edit</button><button className="button button-small button-danger" onClick={()=>setVehiclePendingDeletion(v)}>Delete</button></div></td>}
                   </tr>
                 ))}
-                {vehicles.length === 0 && <tr><td colSpan={8} className="data-table-empty">No vehicles found</td></tr>}
+                {filteredVehicles.length === 0 && <tr><td colSpan={8} className="data-table-empty">No vehicles found</td></tr>}
               </tbody>
             </table>
           </div>

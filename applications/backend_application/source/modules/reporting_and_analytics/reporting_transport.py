@@ -33,12 +33,14 @@ from source.modules.reporting_and_analytics.reporting_contracts import (
     MaintenanceCostReport,
     ReportFilterRequest,
     TripSummaryReport,
+    VehicleProfitabilityReport,
 )
 from source.modules.reporting_and_analytics.generate_reports import (
     generate_driver_performance_report,
     generate_expense_breakdown_report,
     generate_maintenance_cost_report,
     generate_trip_summary_report,
+    generate_vehicle_profitability_report,
 )
 from source.modules.reporting_and_analytics.export_report_data import (
     export_rows_to_csv,
@@ -118,6 +120,49 @@ def get_maintenance_cost_report(
 ):
     filters = _build_filters(start_date, end_date, vehicle_id, region)
     return generate_maintenance_cost_report(database_session, filters)
+
+
+@reporting_router.get("/vehicle-profitability", response_model=VehicleProfitabilityReport)
+def get_vehicle_profitability_report(
+    current_user: Annotated[UserAccount, Depends(get_current_authenticated_user)],
+    database_session: Annotated[Session, Depends(get_database_session)],
+    start_date: Optional[date] = None,
+    end_date: Optional[date] = None,
+    vehicle_id: Optional[int] = None,
+    region: Optional[str] = None,
+):
+    return generate_vehicle_profitability_report(database_session, _build_filters(start_date, end_date, vehicle_id, region))
+
+
+@reporting_router.get("/vehicle-profitability/csv")
+def export_vehicle_profitability_csv(
+    current_user: Annotated[UserAccount, Depends(get_current_authenticated_user)],
+    database_session: Annotated[Session, Depends(get_database_session)],
+    start_date: Optional[date] = None,
+    end_date: Optional[date] = None,
+    vehicle_id: Optional[int] = None,
+    region: Optional[str] = None,
+):
+    report = generate_vehicle_profitability_report(database_session, _build_filters(start_date, end_date, vehicle_id, region))
+    headers = ["Vehicle", "Registration", "Revenue", "Fuel", "Maintenance", "Other", "Operational Cost", "Net Profit", "ROI %"]
+    rows = [[r.vehicle_name_model, r.vehicle_registration_number, r.revenue, r.fuel_cost, r.maintenance_cost, r.other_expenses, r.total_operational_cost, r.net_profit, r.roi_percent] for r in report.rows]
+    return Response(content=export_rows_to_csv(headers, rows), media_type="text/csv", headers={"Content-Disposition": "attachment; filename=vehicle_profitability.csv"})
+
+
+@reporting_router.get("/vehicle-profitability/pdf")
+def export_vehicle_profitability_pdf(
+    current_user: Annotated[UserAccount, Depends(get_current_authenticated_user)],
+    database_session: Annotated[Session, Depends(get_database_session)],
+    start_date: Optional[date] = None,
+    end_date: Optional[date] = None,
+    vehicle_id: Optional[int] = None,
+    region: Optional[str] = None,
+):
+    report = generate_vehicle_profitability_report(database_session, _build_filters(start_date, end_date, vehicle_id, region))
+    headers = ["Vehicle", "Reg.", "Revenue", "Op. Cost", "Net Profit", "ROI %"]
+    rows = [[r.vehicle_name_model, r.vehicle_registration_number, f"Rs {r.revenue:,.0f}", f"Rs {r.total_operational_cost:,.0f}", f"Rs {r.net_profit:,.0f}", f"{r.roi_percent:.2f}%"] for r in report.rows]
+    summary = [f"Revenue: Rs {report.total_revenue:,.0f}", f"Operational cost: Rs {report.total_operational_cost:,.0f}", f"Net profit: Rs {report.total_net_profit:,.0f}"]
+    return Response(content=export_rows_to_pdf("Vehicle Profitability Report", headers, rows, summary), media_type="application/pdf", headers={"Content-Disposition": "attachment; filename=vehicle_profitability.pdf"})
 
 
 # ── CSV Export ────────────────────────────────────────────

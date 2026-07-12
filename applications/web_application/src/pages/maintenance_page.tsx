@@ -24,7 +24,7 @@ export default function MaintenancePage() {
   useEffect(fetchRecords, []);
 
   const openForm = async () => {
-    try { const v = await apiClient.get('/vehicles'); setVehicles(v.data); setShowForm(true); }
+    try { const v = await apiClient.get('/vehicles/available'); setVehicles(v.data); setShowForm(true); }
     catch (error) { setFeedbackMessage(getApiErrorMessage(error, 'Vehicles could not be loaded.')); }
   };
 

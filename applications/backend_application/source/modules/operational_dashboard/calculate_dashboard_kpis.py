@@ -23,15 +23,28 @@ from source.modules.operational_dashboard.operational_dashboard_contracts import
 )
 
 
-def calculate_dashboard_kpis(database_session: Session) -> DashboardKpiResult:
+def calculate_dashboard_kpis(
+    database_session: Session,
+    vehicle_type_filter: str | None = None,
+    vehicle_status_filter: str | None = None,
+    region_filter: str | None = None,
+) -> DashboardKpiResult:
     """Aggregate all KPI metrics in a single database round-trip batch."""
 
     # ── Fleet counts ──────────────────────────────────────
+    vehicle_query = database_session.query(Vehicle)
+    if vehicle_type_filter:
+        vehicle_query = vehicle_query.filter(Vehicle.type == vehicle_type_filter)
+    if vehicle_status_filter:
+        vehicle_query = vehicle_query.filter(Vehicle.status == vehicle_status_filter)
+    if region_filter:
+        vehicle_query = vehicle_query.filter(Vehicle.region == region_filter)
+    filtered_vehicle_ids = [vehicle.id for vehicle in vehicle_query.all()]
     vehicle_status_counts = dict(
         database_session.query(Vehicle.status, func.count(Vehicle.id))
-        .group_by(Vehicle.status)
-        .all()
-    )
+        .filter(Vehicle.id.in_(filtered_vehicle_ids))
+        .group_by(Vehicle.status).all()
+    ) if filtered_vehicle_ids else {}
     total_vehicles = sum(vehicle_status_counts.values())
     fleet_status = FleetStatusBreakdown(
         available=vehicle_status_counts.get(VehicleStatus.AVAILABLE, 0),
@@ -67,9 +80,9 @@ def calculate_dashboard_kpis(database_session: Session) -> DashboardKpiResult:
     # ── Trip counts ───────────────────────────────────────
     trip_status_counts = dict(
         database_session.query(Trip.status, func.count(Trip.id))
-        .group_by(Trip.status)
-        .all()
-    )
+        .filter(Trip.vehicle_id.in_(filtered_vehicle_ids))
+        .group_by(Trip.status).all()
+    ) if filtered_vehicle_ids else {}
     total_trips = sum(trip_status_counts.values())
     active_trips = (
         trip_status_counts.get(TripStatus.DRAFT, 0)
@@ -81,20 +94,23 @@ def calculate_dashboard_kpis(database_session: Session) -> DashboardKpiResult:
     # ── Financial aggregates ──────────────────────────────
     total_revenue = float(
         database_session.query(func.coalesce(func.sum(Trip.revenue), 0))
-        .filter(Trip.status == TripStatus.COMPLETED)
+        .filter(Trip.status == TripStatus.COMPLETED, Trip.vehicle_id.in_(filtered_vehicle_ids))
         .scalar()
     )
 
     total_fuel_cost = float(
-        database_session.query(func.coalesce(func.sum(FuelLog.cost), 0)).scalar()
+        database_session.query(func.coalesce(func.sum(FuelLog.cost), 0))
+        .filter(FuelLog.vehicle_id.in_(filtered_vehicle_ids)).scalar()
     )
 
     total_expenses = float(
-        database_session.query(func.coalesce(func.sum(Expense.amount), 0)).scalar()
+        database_session.query(func.coalesce(func.sum(Expense.amount), 0))
+        .filter(Expense.vehicle_id.in_(filtered_vehicle_ids)).scalar()
     )
 
     total_maintenance_cost = float(
-        database_session.query(func.coalesce(func.sum(MaintenanceLog.cost), 0)).scalar()
+        database_session.query(func.coalesce(func.sum(MaintenanceLog.cost), 0))
+        .filter(MaintenanceLog.vehicle_id.in_(filtered_vehicle_ids)).scalar()
     )
 
     return DashboardKpiResult(
@@ -102,6 +118,9 @@ def calculate_dashboard_kpis(database_session: Session) -> DashboardKpiResult:
         total_drivers=total_drivers,
         total_trips=total_trips,
         active_trips=active_trips,
+        pending_trips=trip_status_counts.get(TripStatus.DRAFT, 0),
+        active_vehicles=non_retired,
+        drivers_on_duty=driver_status.available + driver_status.on_trip,
         completed_trips=completed_trips,
         cancelled_trips=cancelled_trips,
         total_revenue=total_revenue,

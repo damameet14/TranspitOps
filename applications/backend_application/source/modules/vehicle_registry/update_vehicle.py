@@ -7,6 +7,7 @@ from source.shared_infrastructure.database_models.vehicle_model import Vehicle, 
 from source.shared_infrastructure.standard_error_responses import (
     DuplicateRegistrationNumberError,
     ResourceNotFoundError,
+    ManagedStatusTransitionError,
 )
 from source.modules.vehicle_registry.vehicle_registry_contracts import UpdateVehicleRequest
 
@@ -34,6 +35,8 @@ def update_vehicle(
     if update_request.acquisition_cost is not None:
         vehicle.acquisition_cost = update_request.acquisition_cost
     if update_request.status is not None:
+        if update_request.status in (VehicleStatus.ON_TRIP, VehicleStatus.IN_SHOP) or vehicle.status in (VehicleStatus.ON_TRIP, VehicleStatus.IN_SHOP):
+            raise ManagedStatusTransitionError("Vehicle", update_request.status.value)
         vehicle.status = VehicleStatus(update_request.status)
     if update_request.region is not None:
         vehicle.region = update_request.region

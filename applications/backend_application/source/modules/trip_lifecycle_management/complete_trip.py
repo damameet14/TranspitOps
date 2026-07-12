@@ -9,6 +9,7 @@ Business rule 7 — On completion:
 """
 
 from datetime import date, datetime, timezone
+import os
 
 from sqlalchemy.orm import Session
 
@@ -40,7 +41,10 @@ def complete_trip(
 
     Raises InvalidTripStateTransitionError if trip is not in Dispatched status.
     """
-    trip = database_session.query(Trip).filter(Trip.id == trip_id).first()
+    trip_query = database_session.query(Trip).filter(Trip.id == trip_id)
+    if getattr(getattr(database_session, "bind", None), "dialect", None) is not None and database_session.bind.dialect.name == "postgresql":
+        trip_query = trip_query.with_for_update(of=Trip)
+    trip = trip_query.first()
     if trip is None:
         raise ResourceNotFoundError("Trip", trip_id)
 
@@ -73,11 +77,16 @@ def complete_trip(
         driver.status = DriverStatus.AVAILABLE
 
     # Auto-create fuel log entry (cost estimated at ₹100/liter as default)
+    fuel_cost = complete_request.fuel_cost
+    if fuel_cost is None:
+        configured_price = float(os.getenv("DEFAULT_FUEL_PRICE_PER_LITER", "100"))
+        fuel_cost = complete_request.fuel_consumed_liters * configured_price
+
     fuel_log = FuelLog(
         vehicle_id=trip.vehicle_id,
         trip_id=trip.id,
         liters=complete_request.fuel_consumed_liters,
-        cost=complete_request.fuel_consumed_liters * 100,  # Default ₹100/liter
+        cost=fuel_cost,
         log_date=date.today(),
     )
     database_session.add(fuel_log)

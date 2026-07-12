@@ -303,6 +303,20 @@ def seed_drivers(session):
     print("✓ Drivers seeded (10 drivers, including 1 suspended + 1 expired license)")
 
 
+def link_demo_driver_account(session):
+    """Idempotently bind the driver demo login to Alex's driver record."""
+    driver_user = session.query(UserAccount).filter(
+        UserAccount.email == "driver@transitops.io"
+    ).first()
+    alex_driver = session.query(Driver).filter(
+        Driver.email == "alex.fernandez@transitops.io"
+    ).first()
+    if driver_user is not None and alex_driver is not None:
+        driver_user.driver_id = alex_driver.id
+        session.commit()
+    print("Driver login linked to its driver record")
+
+
 def seed_trips(session):
     """Create trips across all lifecycle statuses.
 
@@ -599,6 +613,7 @@ def run_seed():
     import source.shared_infrastructure.database_models.fuel_log_model  # noqa: F401
     import source.shared_infrastructure.database_models.expense_model  # noqa: F401
     import source.shared_infrastructure.database_models.route_suggestion_model  # noqa: F401
+    import source.shared_infrastructure.database_models.vehicle_document_model  # noqa: F401
 
     # Create tables
     DatabaseBaseModel.metadata.create_all(bind=database_engine)
@@ -609,6 +624,7 @@ def run_seed():
         seed_users(session)
         seed_vehicles(session)
         seed_drivers(session)
+        link_demo_driver_account(session)
         seed_trips(session)
         seed_maintenance_records(session)
         seed_fuel_logs(session)

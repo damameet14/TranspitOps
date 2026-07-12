@@ -6,7 +6,7 @@ Routes:
 
 from typing import Annotated
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
 from source.application_startup.database_connection import get_database_session
@@ -27,6 +27,14 @@ operational_dashboard_router = APIRouter(
 def get_dashboard_kpis(
     current_user: Annotated[UserAccount, Depends(get_current_authenticated_user)],
     database_session: Annotated[Session, Depends(get_database_session)],
+    vehicle_type: str | None = Query(None),
+    vehicle_status: str | None = Query(None),
+    region: str | None = Query(None),
 ) -> DashboardKpiResult:
     """Return all operational KPI metrics for the dashboard. All roles can access."""
-    return calculate_dashboard_kpis(database_session)
+    return calculate_dashboard_kpis(
+        database_session,
+        vehicle_type_filter=vehicle_type,
+        vehicle_status_filter=vehicle_status,
+        region_filter=region,
+    )

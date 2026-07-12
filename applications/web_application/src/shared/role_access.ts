@@ -19,6 +19,7 @@ export const ROLE_OPTIONS: RoleOption[] = [
 const ROUTE_ROLES: Record<string, UserRole[]> = {
   '/dashboard': [...USER_ROLES],
   '/vehicles': ['fleet_manager'],
+  '/vehicle-documents': ['fleet_manager', 'safety_officer'],
   '/drivers': ['fleet_manager', 'safety_officer'],
   '/trips': ['fleet_manager', 'driver'],
   '/maintenance': ['fleet_manager', 'safety_officer'],

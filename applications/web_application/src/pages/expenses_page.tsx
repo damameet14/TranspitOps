@@ -1,49 +1,26 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import apiClient from '../shared/api_client';
+import { useAuth } from '../shared/auth_context';
 import FeedbackCard from '../shared/feedback_card';
 import { getApiErrorMessage } from '../shared/api_error_message';
 
-interface Expense {
-  id: number; vehicle_id: number; type: string; amount: number; expense_date: string;
-  notes: string | null; vehicle_registration_number: string | null; vehicle_name_model: string | null;
-}
+interface Expense { id:number; vehicle_id:number; type:string; amount:number; expense_date:string; notes:string|null; vehicle_registration_number:string|null; vehicle_name_model:string|null; }
+interface VehicleOption { id:number; registration_number:string; name_model:string; }
+const today = () => new Date().toISOString().slice(0,10);
 
 export default function ExpensesPage() {
-  const [expenses, setExpenses] = useState<Expense[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [feedbackMessage, setFeedbackMessage] = useState('');
-
-  useEffect(() => {
-    apiClient.get('/expenses').then(r => setExpenses(r.data)).catch(error => setFeedbackMessage(getApiErrorMessage(error, 'Expenses could not be loaded.'))).finally(() => setLoading(false));
-  }, []);
-
-  if (loading) return <div className="page-content"><p className="text-muted">Loading...</p></div>;
-
-  return (
-    <>
-      <div className="topbar"><h2 className="topbar-title">Expenses</h2></div>
-      <div className="page-content">
-        <FeedbackCard message={feedbackMessage} onDismiss={() => setFeedbackMessage('')} />
-        <div className="card">
-          <div className="data-table-container">
-            <table className="data-table">
-              <thead><tr><th>Date</th><th>Vehicle</th><th>Type</th><th>Amount (₹)</th><th>Notes</th></tr></thead>
-              <tbody>
-                {expenses.map(exp => (
-                  <tr key={exp.id}>
-                    <td>{exp.expense_date}</td>
-                    <td>{exp.vehicle_registration_number || `#${exp.vehicle_id}`}</td>
-                    <td>{exp.type}</td>
-                    <td>₹{exp.amount.toLocaleString()}</td>
-                    <td style={{maxWidth:250,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{exp.notes || '—'}</td>
-                  </tr>
-                ))}
-                {expenses.length === 0 && <tr><td colSpan={5} className="data-table-empty">No expenses found</td></tr>}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-    </>
-  );
+  const { user } = useAuth();
+  const [expenses,setExpenses]=useState<Expense[]>([]); const [vehicles,setVehicles]=useState<VehicleOption[]>([]); const [types,setTypes]=useState<string[]>([]);
+  const [loading,setLoading]=useState(true); const [showForm,setShowForm]=useState(false); const [search,setSearch]=useState(''); const [typeFilter,setTypeFilter]=useState(''); const [feedbackMessage,setFeedbackMessage]=useState('');
+  const [form,setForm]=useState({vehicle_id:'',type:'',amount:'',expense_date:today(),notes:''});
+  const canWrite=user?.role==='fleet_manager'||user?.role==='financial_analyst';
+  const load=()=>Promise.all([apiClient.get('/expenses'),apiClient.get('/vehicles'),apiClient.get('/expenses/types')]).then(([e,v,t])=>{setExpenses(e.data);setVehicles(v.data);setTypes(t.data);}).catch(error=>setFeedbackMessage(getApiErrorMessage(error,'Expense data could not be loaded.'))).finally(()=>setLoading(false));
+  useEffect(()=>{void load();},[]);
+  const filtered=useMemo(()=>expenses.filter(expense=>(!typeFilter||expense.type===typeFilter)&&`${expense.vehicle_registration_number??''} ${expense.type} ${expense.notes??''}`.toLowerCase().includes(search.toLowerCase())),[expenses,search,typeFilter]);
+  const submit=async(event:React.FormEvent)=>{event.preventDefault();try{await apiClient.post('/expenses',{...form,vehicle_id:+form.vehicle_id,amount:+form.amount,notes:form.notes||null});setForm({vehicle_id:'',type:'',amount:'',expense_date:today(),notes:''});setShowForm(false);setFeedbackMessage('Expense created successfully.');await load();}catch(error){setFeedbackMessage(getApiErrorMessage(error,'Expense could not be created.'));}};
+  if(loading)return <div className="page-content"><p className="text-muted">Loading...</p></div>;
+  return <><div className="topbar"><h2 className="topbar-title">Expenses</h2>{canWrite&&<button className="button button-primary" onClick={()=>setShowForm(value=>!value)}>+ Add Expense</button>}</div><div className="page-content"><FeedbackCard message={feedbackMessage} onDismiss={()=>setFeedbackMessage('')}/>
+    {showForm&&<div className="card mb-6"><h3 className="card-title mb-4">New Expense</h3><form onSubmit={submit}><div className="form-row"><div className="form-group"><label className="form-label">Vehicle</label><select className="form-select" required value={form.vehicle_id} onChange={e=>setForm({...form,vehicle_id:e.target.value})}><option value="">Select vehicle...</option>{vehicles.map(vehicle=><option key={vehicle.id} value={vehicle.id}>{vehicle.registration_number} — {vehicle.name_model}</option>)}</select></div><div className="form-group"><label className="form-label">Expense Type</label><input className="form-input" list="expense-types" required value={form.type} onChange={e=>setForm({...form,type:e.target.value})}/><datalist id="expense-types">{types.map(type=><option key={type} value={type}/>)}</datalist></div></div><div className="form-row"><div className="form-group"><label className="form-label">Amount (₹)</label><input className="form-input" type="number" min="0.01" step="0.01" required value={form.amount} onChange={e=>setForm({...form,amount:e.target.value})}/></div><div className="form-group"><label className="form-label">Date</label><input className="form-input" type="date" required value={form.expense_date} onChange={e=>setForm({...form,expense_date:e.target.value})}/></div></div><div className="form-group"><label className="form-label">Notes</label><textarea className="form-input" value={form.notes} onChange={e=>setForm({...form,notes:e.target.value})}/></div><button className="button button-primary" type="submit">Save Expense</button> <button className="button button-secondary" type="button" onClick={()=>setShowForm(false)}>Cancel</button></form></div>}
+    <div className="card"><div className="card-header" style={{display:'flex',gap:'var(--space-3)'}}><input className="form-input" style={{maxWidth:360}} placeholder="Search vehicle, type or notes..." value={search} onChange={e=>setSearch(e.target.value)}/><select className="form-select" style={{maxWidth:220}} value={typeFilter} onChange={e=>setTypeFilter(e.target.value)}><option value="">All types</option>{types.map(type=><option key={type} value={type}>{type}</option>)}</select></div><div className="data-table-container"><table className="data-table"><thead><tr><th>Date</th><th>Vehicle</th><th>Type</th><th>Amount (₹)</th><th>Notes</th></tr></thead><tbody>{filtered.map(exp=><tr key={exp.id}><td>{exp.expense_date}</td><td>{exp.vehicle_registration_number||`#${exp.vehicle_id}`}</td><td>{exp.type}</td><td>₹{exp.amount.toLocaleString('en-IN')}</td><td>{exp.notes||'—'}</td></tr>)}{filtered.length===0&&<tr><td colSpan={5} className="data-table-empty">No expenses found</td></tr>}</tbody></table></div></div>
+  </div></>;
 }

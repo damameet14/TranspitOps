@@ -17,12 +17,14 @@ def register_all_routes(application: FastAPI) -> None:
     from source.modules.vehicle_registry.vehicle_registry_transport import (
         vehicle_registry_router,
     )
+    from source.modules.vehicle_registry.vehicle_document_transport import vehicle_document_router
     from source.modules.driver_management.driver_management_transport import (
         driver_management_router,
     )
 
     application.include_router(user_authentication_router, prefix="/api")
     application.include_router(vehicle_registry_router, prefix="/api")
+    application.include_router(vehicle_document_router, prefix="/api")
     application.include_router(driver_management_router, prefix="/api")
 
     # Phase 3: Trips, Maintenance
