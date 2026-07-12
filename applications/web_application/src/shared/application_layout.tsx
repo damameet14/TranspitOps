@@ -11,7 +11,10 @@ const NAVIGATION_SECTIONS = [
   { label: 'Operations', links: [{ to: '/trips', label: 'Trips', icon: 'trips' as const }, { to: '/maintenance', label: 'Maintenance', icon: 'maintenance' as const }] },
   { label: 'Finance', links: [{ to: '/fuel-logs', label: 'Fuel Logs', icon: 'fuel' as const }, { to: '/expenses', label: 'Expenses', icon: 'expenses' as const }] },
   { label: 'Analytics', links: [{ to: '/reports', label: 'Reports', icon: 'reports' as const }] },
+<<<<<<< HEAD
   { label: 'Administration', links: [{ to: '/admin', label: 'User Administration', icon: 'users' as const }] },
+=======
+>>>>>>> 8b2d77ce78de4ecc024e41e576d67e9f1ba9f407
 ];
 
 export default function ApplicationLayout() {
@@ -49,7 +52,11 @@ export default function ApplicationLayout() {
           ))}
         </div>
         <div className="sidebar-user-info">
+<<<<<<< HEAD
           <div onClick={()=>navigate('/profile')} style={{cursor:'pointer'}}><div className="sidebar-user-name">{user?.full_name}</div><div className="sidebar-user-role">{user?.role?.replaceAll('_', ' ')}</div></div>
+=======
+          <div><div className="sidebar-user-name">{user?.full_name}</div><div className="sidebar-user-role">{user?.role?.replaceAll('_', ' ')}</div></div>
+>>>>>>> 8b2d77ce78de4ecc024e41e576d67e9f1ba9f407
           <div className="sidebar-user-actions"><button className="icon-button" aria-label="Toggle color theme" title="Toggle color theme" onClick={()=>setDarkMode(value=>!value)}><ApplicationIcon name={darkMode?'sun':'moon'} /></button><button className="icon-button" aria-label="Logout" title="Logout" onClick={handleLogout}><ApplicationIcon name="logout" /></button></div>
         </div>
       </nav>

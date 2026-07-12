@@ -22,8 +22,11 @@ export default function DriversPage() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [search,setSearch]=useState('');
   const [form, setForm] = useState({ name: '', email: '', license_number: '', license_category: 'LMV-TR', license_expiry_date: '', contact_number: '', safety_score: '100', status:'available' });
+<<<<<<< HEAD
   const [loginTarget, setLoginTarget] = useState<Driver | null>(null);
   const [loginForm, setLoginForm] = useState({ email: '', password: '' });
+=======
+>>>>>>> 8b2d77ce78de4ecc024e41e576d67e9f1ba9f407
   const canWrite = user?.role === 'fleet_manager' || user?.role === 'safety_officer';
 
   const fetchDrivers = () => { apiClient.get('/drivers').then(r => setDrivers(r.data)).catch(error => setFeedbackMessage(getApiErrorMessage(error, 'Drivers could not be loaded.'))).finally(() => setLoading(false)); };
@@ -46,6 +49,7 @@ export default function DriversPage() {
     setEditingDriverId(null);
     setForm({ name: '', email: '', license_number: '', license_category: 'LMV-TR', license_expiry_date: '', contact_number: '', safety_score: '100', status:'available' });
     setShowForm(true);
+<<<<<<< HEAD
   };
 
   const openEditForm = (driver: Driver) => {
@@ -77,7 +81,30 @@ export default function DriversPage() {
       setLoginTarget(null);
       setLoginForm({ email: '', password: '' });
     } catch (error) { setFeedbackMessage(getApiErrorMessage(error, 'Driver login could not be created.')); }
+=======
+>>>>>>> 8b2d77ce78de4ecc024e41e576d67e9f1ba9f407
   };
+
+  const openEditForm = (driver: Driver) => {
+    setEditingDriverId(driver.id);
+    setForm({ name: driver.name, email: driver.email, license_number: driver.license_number, license_category: driver.license_category, license_expiry_date: driver.license_expiry_date, contact_number: driver.contact_number, safety_score: String(driver.safety_score), status:driver.status });
+    setShowForm(true);
+  };
+  const filteredDrivers=useMemo(()=>drivers.filter(driver=>`${driver.name} ${driver.email} ${driver.license_number} ${driver.status}`.toLowerCase().includes(search.toLowerCase())),[drivers,search]);
+
+  const handleDelete = async () => {
+    if (!driverPendingDeletion) return;
+    setIsDeleting(true);
+    try {
+      await apiClient.delete(`/drivers/${driverPendingDeletion.id}`);
+      setDriverPendingDeletion(null);
+      fetchDrivers();
+    } catch (error) {
+      setFeedbackMessage(getApiErrorMessage(error, 'Driver could not be deleted.'));
+      setDriverPendingDeletion(null);
+    } finally { setIsDeleting(false); }
+  };
+  const sendLicenseReminders=async()=>{try{const response=await apiClient.post('/drivers/license-reminders?days=30');setFeedbackMessage(`License reminders processed: ${response.data.sent} sent, ${response.data.failed} failed.`);}catch(error){setFeedbackMessage(getApiErrorMessage(error,'License reminders could not be sent.'));}};
 
   if (loading) return <div className="page-content"><p className="text-muted">Loading...</p></div>;
 
@@ -132,7 +159,11 @@ export default function DriversPage() {
                     <td>{d.contact_number}</td>
                     <td><span style={{fontWeight:500,color:d.safety_score >= 80 ? 'var(--state-available-text)' : d.safety_score >= 50 ? 'var(--state-in-shop-text)' : 'var(--state-suspended-text)'}}>{d.safety_score}</span></td>
                     <td><span className={`status-badge status-badge-${d.status}`}>{d.status.replace('_',' ')}</span></td>
+<<<<<<< HEAD
                     {canWrite && <td><div className="table-actions"><button className="button button-small button-secondary" onClick={()=>openEditForm(d)}>Edit</button>{user?.role === 'fleet_manager' && <button className="button button-small button-secondary" onClick={()=>{setLoginTarget(d);setLoginForm({email:d.email,password:''});}}>Create Login</button>}<button className="button button-small button-danger" onClick={()=>setDriverPendingDeletion(d)}>Delete</button></div></td>}
+=======
+                    {canWrite && <td><div className="table-actions"><button className="button button-small button-secondary" onClick={()=>openEditForm(d)}>Edit</button><button className="button button-small button-danger" onClick={()=>setDriverPendingDeletion(d)}>Delete</button></div></td>}
+>>>>>>> 8b2d77ce78de4ecc024e41e576d67e9f1ba9f407
                   </tr>
                 ))}
                 {filteredDrivers.length === 0 && <tr><td colSpan={9} className="data-table-empty">No drivers found</td></tr>}
@@ -142,7 +173,10 @@ export default function DriversPage() {
         </div>
       </div>
       {driverPendingDeletion && <ConfirmationDialog title="Delete driver?" message={`Delete ${driverPendingDeletion.name}? Drivers with trip history must be retained and cannot be deleted.`} confirmLabel="Delete driver" isProcessing={isDeleting} onConfirm={handleDelete} onCancel={() => setDriverPendingDeletion(null)} />}
+<<<<<<< HEAD
       {loginTarget && <div className="modal-overlay"><div className="modal-container"><div className="modal-header"><h3 className="modal-title">Create Login for {loginTarget.name}</h3></div><form onSubmit={handleCreateLogin}><div className="modal-body"><div className="form-group"><label className="form-label">Email</label><input className="form-input" type="email" value={loginForm.email} onChange={e=>setLoginForm({...loginForm,email:e.target.value})} required/></div><div className="form-group"><label className="form-label">Temporary Password</label><input className="form-input" type="password" minLength={8} value={loginForm.password} onChange={e=>setLoginForm({...loginForm,password:e.target.value})} required/></div></div><div className="modal-footer"><button type="button" className="button button-secondary" onClick={()=>setLoginTarget(null)}>Cancel</button><button className="button button-primary">Create Login</button></div></form></div></div>}
+=======
+>>>>>>> 8b2d77ce78de4ecc024e41e576d67e9f1ba9f407
     </>
   );
 }

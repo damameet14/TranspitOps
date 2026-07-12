@@ -12,14 +12,20 @@ def retrieve_all_trips(
     database_session: Session,
     status_filter: Optional[str] = None,
     driver_id_filter: Optional[int] = None,
+<<<<<<< HEAD
     driver_ids_filter: Optional[list[int]] = None,
+=======
+>>>>>>> 8b2d77ce78de4ecc024e41e576d67e9f1ba9f407
 ) -> list[Trip]:
     """Return all trips, optionally filtered by status."""
     query = database_session.query(Trip)
     if driver_id_filter is not None:
         query = query.filter(Trip.driver_id == driver_id_filter)
+<<<<<<< HEAD
     if driver_ids_filter is not None:
         query = query.filter(Trip.driver_id.in_(driver_ids_filter))
+=======
+>>>>>>> 8b2d77ce78de4ecc024e41e576d67e9f1ba9f407
     if status_filter is not None:
         try:
             trip_status = TripStatus(status_filter)

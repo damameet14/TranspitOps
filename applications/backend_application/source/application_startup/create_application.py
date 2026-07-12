@@ -26,7 +26,10 @@ async def application_lifespan(application: FastAPI):
     import source.shared_infrastructure.database_models.expense_model  # noqa: F401
     import source.shared_infrastructure.database_models.route_suggestion_model  # noqa: F401
     import source.shared_infrastructure.database_models.vehicle_document_model  # noqa: F401
+<<<<<<< HEAD
     import source.shared_infrastructure.database_models.service_location_model  # noqa: F401
+=======
+>>>>>>> 8b2d77ce78de4ecc024e41e576d67e9f1ba9f407
 
     DatabaseBaseModel.metadata.create_all(bind=database_engine)
     ensure_database_schema_compatibility(database_engine)

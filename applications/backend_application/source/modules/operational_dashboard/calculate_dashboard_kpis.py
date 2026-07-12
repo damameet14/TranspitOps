@@ -28,8 +28,11 @@ def calculate_dashboard_kpis(
     vehicle_type_filter: str | None = None,
     vehicle_status_filter: str | None = None,
     region_filter: str | None = None,
+<<<<<<< HEAD
     trip_driver_ids: list[int] | None = None,
     include_financial_metrics: bool = True,
+=======
+>>>>>>> 8b2d77ce78de4ecc024e41e576d67e9f1ba9f407
 ) -> DashboardKpiResult:
     """Aggregate all KPI metrics in a single database round-trip batch."""
 
@@ -83,10 +86,18 @@ def calculate_dashboard_kpis(
     ) or 0
 
     # ── Trip counts ───────────────────────────────────────
+<<<<<<< HEAD
     trip_query = database_session.query(Trip.status, func.count(Trip.id)).filter(Trip.vehicle_id.in_(filtered_vehicle_ids))
     if trip_driver_ids is not None:
         trip_query = trip_query.filter(Trip.driver_id.in_(trip_driver_ids))
     trip_status_counts = dict(trip_query.group_by(Trip.status).all()) if filtered_vehicle_ids else {}
+=======
+    trip_status_counts = dict(
+        database_session.query(Trip.status, func.count(Trip.id))
+        .filter(Trip.vehicle_id.in_(filtered_vehicle_ids))
+        .group_by(Trip.status).all()
+    ) if filtered_vehicle_ids else {}
+>>>>>>> 8b2d77ce78de4ecc024e41e576d67e9f1ba9f407
     total_trips = sum(trip_status_counts.values())
     active_trips = (
         trip_status_counts.get(TripStatus.DRAFT, 0)

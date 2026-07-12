@@ -40,7 +40,11 @@ from source.modules.trip_lifecycle_management.create_trip_as_draft import create
 from source.modules.trip_lifecycle_management.dispatch_trip import dispatch_trip
 from source.modules.trip_lifecycle_management.complete_trip import complete_trip
 from source.modules.trip_lifecycle_management.cancel_trip import cancel_trip
+<<<<<<< HEAD
 from source.modules.trip_lifecycle_management.trip_access_control import require_fleet_manager_trip_scope, require_trip_driver_ownership
+=======
+from source.modules.trip_lifecycle_management.trip_access_control import require_trip_driver_ownership
+>>>>>>> 8b2d77ce78de4ecc024e41e576d67e9f1ba9f407
 from source.modules.trip_lifecycle_management.retrieve_trips import (
     retrieve_all_trips,
     retrieve_trip_by_id,
@@ -63,11 +67,17 @@ def list_all_trips(
     driver_id_filter = current_user.driver_id if current_user.role == UserRole.DRIVER else None
     if current_user.role == UserRole.DRIVER and driver_id_filter is None:
         require_trip_driver_ownership(current_user, -1)
+<<<<<<< HEAD
     manager_driver_ids = None
     if current_user.role == UserRole.FLEET_MANAGER:
         from source.shared_infrastructure.database_models.driver_model import Driver
         manager_driver_ids = [identifier for (identifier,) in database_session.query(Driver.id).filter(Driver.fleet_manager_id == current_user.id).all()]
     trips = retrieve_all_trips(database_session, status_filter=status, driver_id_filter=driver_id_filter, driver_ids_filter=manager_driver_ids)
+=======
+    trips = retrieve_all_trips(
+        database_session, status_filter=status, driver_id_filter=driver_id_filter
+    )
+>>>>>>> 8b2d77ce78de4ecc024e41e576d67e9f1ba9f407
     return [_trip_to_response(trip) for trip in trips]
 
 
@@ -80,6 +90,7 @@ def create_new_trip(
     ],
     database_session: Annotated[Session, Depends(get_database_session)],
 ) -> TripResponse:
+<<<<<<< HEAD
     """Create a current draft or completed historical trip. Fleet Manager or Admin only."""
     if current_user.role == UserRole.FLEET_MANAGER:
         from fastapi import HTTPException
@@ -87,6 +98,10 @@ def create_new_trip(
         owned_driver = database_session.query(Driver.id).filter(Driver.id == create_request.driver_id, Driver.fleet_manager_id == current_user.id).first()
         if owned_driver is None:
             raise HTTPException(status_code=403, detail={"detail": "Select a driver assigned to your fleet team.", "code": "FLEET_MANAGER_SCOPE_VIOLATION"})
+=======
+    """Create a new trip in Draft status. Fleet Manager or Driver only."""
+    require_trip_driver_ownership(current_user, create_request.driver_id)
+>>>>>>> 8b2d77ce78de4ecc024e41e576d67e9f1ba9f407
     trip = create_trip_as_draft(database_session, create_request)
     return _trip_to_response(trip)
 
@@ -100,7 +115,10 @@ def get_trip(
     """Get a single trip by ID."""
     trip = retrieve_trip_by_id(database_session, trip_id)
     require_trip_driver_ownership(current_user, trip.driver_id)
+<<<<<<< HEAD
     require_fleet_manager_trip_scope(database_session, current_user, trip.driver_id)
+=======
+>>>>>>> 8b2d77ce78de4ecc024e41e576d67e9f1ba9f407
     return _trip_to_response(trip)
 
 
@@ -114,9 +132,15 @@ def dispatch_existing_trip(
     database_session: Annotated[Session, Depends(get_database_session)],
 ) -> TripResponse:
     """Dispatch a trip (Draft → Dispatched). Fleet Manager or Driver only."""
+<<<<<<< HEAD
     existing_trip = retrieve_trip_by_id(database_session, trip_id)
     require_trip_driver_ownership(current_user, existing_trip.driver_id)
     require_fleet_manager_trip_scope(database_session, current_user, existing_trip.driver_id)
+=======
+    if current_user.role == UserRole.DRIVER:
+        existing_trip = retrieve_trip_by_id(database_session, trip_id)
+        require_trip_driver_ownership(current_user, existing_trip.driver_id)
+>>>>>>> 8b2d77ce78de4ecc024e41e576d67e9f1ba9f407
     trip = dispatch_trip(database_session, trip_id)
     _notify_trip_recipients(current_user, trip, "dispatched")
     return _trip_to_response(trip)
@@ -133,9 +157,15 @@ def complete_existing_trip(
     database_session: Annotated[Session, Depends(get_database_session)],
 ) -> TripResponse:
     """Complete a trip (Dispatched → Completed). Fleet Manager or Driver only."""
+<<<<<<< HEAD
     existing_trip = retrieve_trip_by_id(database_session, trip_id)
     require_trip_driver_ownership(current_user, existing_trip.driver_id)
     require_fleet_manager_trip_scope(database_session, current_user, existing_trip.driver_id)
+=======
+    if current_user.role == UserRole.DRIVER:
+        existing_trip = retrieve_trip_by_id(database_session, trip_id)
+        require_trip_driver_ownership(current_user, existing_trip.driver_id)
+>>>>>>> 8b2d77ce78de4ecc024e41e576d67e9f1ba9f407
     trip = complete_trip(database_session, trip_id, complete_request)
     _notify_trip_recipients(current_user, trip, "completed")
     return _trip_to_response(trip)
@@ -151,9 +181,15 @@ def cancel_existing_trip(
     database_session: Annotated[Session, Depends(get_database_session)],
 ) -> TripResponse:
     """Cancel a trip from Draft or Dispatched. Fleet Manager or Driver only."""
+<<<<<<< HEAD
     existing_trip = retrieve_trip_by_id(database_session, trip_id)
     require_trip_driver_ownership(current_user, existing_trip.driver_id)
     require_fleet_manager_trip_scope(database_session, current_user, existing_trip.driver_id)
+=======
+    if current_user.role == UserRole.DRIVER:
+        existing_trip = retrieve_trip_by_id(database_session, trip_id)
+        require_trip_driver_ownership(current_user, existing_trip.driver_id)
+>>>>>>> 8b2d77ce78de4ecc024e41e576d67e9f1ba9f407
     trip = cancel_trip(database_session, trip_id)
     _notify_trip_recipients(current_user, trip, "cancelled")
     return _trip_to_response(trip)

@@ -77,6 +77,7 @@ def list_available_drivers(
     return [_driver_to_response(driver) for driver in drivers]
 
 
+<<<<<<< HEAD
 @driver_management_router.get("/recommendations", response_model=list[DriverRecommendationResponse])
 def recommend_available_drivers(
     current_user: Annotated[UserAccount, Depends(require_role(UserRole.FLEET_MANAGER))],
@@ -103,6 +104,8 @@ def recommend_available_drivers(
     return sorted(ranked, key=lambda item: (-item.recommendation_score, item.name))
 
 
+=======
+>>>>>>> 8b2d77ce78de4ecc024e41e576d67e9f1ba9f407
 @driver_management_router.post("/license-reminders")
 def send_license_expiry_reminders(
     current_user: Annotated[UserAccount, Depends(require_role(UserRole.FLEET_MANAGER, UserRole.SAFETY_OFFICER))],
