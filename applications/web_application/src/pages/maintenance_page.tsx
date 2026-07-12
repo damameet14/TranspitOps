@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import apiClient from '../shared/api_client';
 import { useAuth } from '../shared/auth_context';
+import FeedbackCard from '../shared/feedback_card';
+import { getApiErrorMessage } from '../shared/api_error_message';
 
 interface MaintenanceRecord {
   id: number; vehicle_id: number; type: string; cost: number; description: string | null;
@@ -13,30 +15,30 @@ export default function MaintenancePage() {
   const [records, setRecords] = useState<MaintenanceRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
+  const [feedbackMessage, setFeedbackMessage] = useState('');
   const [form, setForm] = useState({ vehicle_id: '', type: '', cost: '', description: '' });
   const [vehicles, setVehicles] = useState<{id:number;registration_number:string;name_model:string}[]>([]);
   const canWrite = user?.role === 'fleet_manager';
 
-  const fetchRecords = () => { apiClient.get('/maintenance').then(r => setRecords(r.data)).catch(console.error).finally(() => setLoading(false)); };
+  const fetchRecords = () => { apiClient.get('/maintenance').then(r => setRecords(r.data)).catch(error => setFeedbackMessage(getApiErrorMessage(error, 'Maintenance records could not be loaded.'))).finally(() => setLoading(false)); };
   useEffect(fetchRecords, []);
 
   const openForm = async () => {
-    const v = await apiClient.get('/vehicles');
-    setVehicles(v.data);
-    setShowForm(true);
+    try { const v = await apiClient.get('/vehicles'); setVehicles(v.data); setShowForm(true); }
+    catch (error) { setFeedbackMessage(getApiErrorMessage(error, 'Vehicles could not be loaded.')); }
   };
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
-    await apiClient.post('/maintenance', { vehicle_id: +form.vehicle_id, type: form.type, cost: +form.cost, description: form.description || null });
-    setShowForm(false);
-    setForm({ vehicle_id: '', type: '', cost: '', description: '' });
-    fetchRecords();
+    try {
+      await apiClient.post('/maintenance', { vehicle_id: +form.vehicle_id, type: form.type, cost: +form.cost, description: form.description || null });
+      setShowForm(false); setForm({ vehicle_id: '', type: '', cost: '', description: '' }); fetchRecords();
+    } catch (error) { setFeedbackMessage(getApiErrorMessage(error, 'Maintenance record could not be created.')); }
   };
 
   const handleClose = async (id: number) => {
-    await apiClient.post(`/maintenance/${id}/close`);
-    fetchRecords();
+    try { await apiClient.post(`/maintenance/${id}/close`); fetchRecords(); }
+    catch (error) { setFeedbackMessage(getApiErrorMessage(error, 'Maintenance record could not be closed.')); }
   };
 
   if (loading) return <div className="page-content"><p className="text-muted">Loading...</p></div>;
@@ -47,6 +49,7 @@ export default function MaintenancePage() {
         <div className="topbar-actions">{canWrite && <button className="button button-primary" onClick={openForm}>+ New Record</button>}</div>
       </div>
       <div className="page-content">
+        <FeedbackCard message={feedbackMessage} onDismiss={() => setFeedbackMessage('')} />
         {showForm && (
           <div className="card mb-6">
             <form onSubmit={handleCreate}>

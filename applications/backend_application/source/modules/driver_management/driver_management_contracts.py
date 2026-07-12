@@ -4,6 +4,7 @@ from datetime import date, datetime
 from typing import Optional
 
 from pydantic import BaseModel, Field
+from source.shared_infrastructure.database_models.driver_model import DriverStatus
 
 
 class CreateDriverRequest(BaseModel):
@@ -24,7 +25,7 @@ class UpdateDriverRequest(BaseModel):
     license_expiry_date: Optional[date] = None
     contact_number: Optional[str] = None
     safety_score: Optional[int] = Field(None, ge=0, le=100)
-    status: Optional[str] = None
+    status: Optional[DriverStatus] = None
 
 
 class DriverResponse(BaseModel):

@@ -35,12 +35,57 @@ class VehicleNotAvailableForDispatchError(TransitOpsError):
         )
 
 
+class VehicleHasTripHistoryError(TransitOpsError):
+    def __init__(self, vehicle_id: int):
+        super().__init__(
+            status_code=409,
+            detail=(
+                f"Vehicle {vehicle_id} cannot be deleted because it is referenced by trip history. "
+                "Keep the vehicle record to preserve operational history."
+            ),
+            error_code="VEHICLE_HAS_TRIP_HISTORY",
+        )
+
+
+class VehicleNotEligibleForMaintenanceError(TransitOpsError):
+    def __init__(self, vehicle_id: int, reason: str):
+        super().__init__(
+            status_code=409,
+            detail=f"Vehicle {vehicle_id} cannot enter maintenance: {reason}.",
+            error_code="VEHICLE_NOT_ELIGIBLE_FOR_MAINTENANCE",
+        )
+
+
+class FinalOdometerRegressionError(TransitOpsError):
+    def __init__(self, vehicle_id: int, current_odometer_km: float, final_odometer_km: float):
+        super().__init__(
+            status_code=422,
+            detail=(
+                f"Vehicle {vehicle_id} final odometer {final_odometer_km} km cannot be below "
+                f"its current odometer {current_odometer_km} km."
+            ),
+            error_code="FINAL_ODOMETER_REGRESSION",
+        )
+
+
 class DriverNotEligibleForTripError(TransitOpsError):
     def __init__(self, driver_id: int, reason: str):
         super().__init__(
             status_code=409,
             detail=f"Driver {driver_id} cannot be assigned: {reason}.",
             error_code="DRIVER_NOT_ELIGIBLE",
+        )
+
+
+class DriverHasTripHistoryError(TransitOpsError):
+    def __init__(self, driver_id: int):
+        super().__init__(
+            status_code=409,
+            detail=(
+                f"Driver {driver_id} cannot be deleted because they are referenced by trip history. "
+                "Keep the driver record to preserve operational history."
+            ),
+            error_code="DRIVER_HAS_TRIP_HISTORY",
         )
 
 

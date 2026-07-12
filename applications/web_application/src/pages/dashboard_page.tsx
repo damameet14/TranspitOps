@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import apiClient from '../shared/api_client';
 import { getResolvedMotionLevel } from '../animation/reducedMotion';
+import FeedbackCard from '../shared/feedback_card';
+import { getApiErrorMessage } from '../shared/api_error_message';
 
 interface DashboardKpis {
   total_vehicles: number;
@@ -23,16 +25,17 @@ interface DashboardKpis {
 export default function DashboardPage() {
   const [kpis, setKpis] = useState<DashboardKpis | null>(null);
   const [loading, setLoading] = useState(true);
+  const [feedbackMessage, setFeedbackMessage] = useState('');
 
   useEffect(() => {
     apiClient.get('/dashboard/kpis')
       .then((res) => setKpis(res.data))
-      .catch(console.error)
+      .catch(error => setFeedbackMessage(getApiErrorMessage(error, 'Dashboard metrics could not be loaded.')))
       .finally(() => setLoading(false));
   }, []);
 
   if (loading) return <div className="page-content"><p className="text-muted">Loading dashboard...</p></div>;
-  if (!kpis) return <div className="page-content"><p className="text-muted">Failed to load KPIs.</p></div>;
+  if (!kpis) return <div className="page-content"><FeedbackCard message={feedbackMessage || 'Dashboard metrics could not be loaded.'} /></div>;
 
   const formatCurrency = (value: number) => `₹${value.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`;
 

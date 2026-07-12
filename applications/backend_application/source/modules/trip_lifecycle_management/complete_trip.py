@@ -17,6 +17,7 @@ from source.shared_infrastructure.database_models.vehicle_model import Vehicle, 
 from source.shared_infrastructure.database_models.driver_model import Driver, DriverStatus
 from source.shared_infrastructure.database_models.fuel_log_model import FuelLog
 from source.shared_infrastructure.standard_error_responses import (
+    FinalOdometerRegressionError,
     InvalidTripStateTransitionError,
     ResourceNotFoundError,
 )
@@ -46,6 +47,14 @@ def complete_trip(
     if trip.status != TripStatus.DISPATCHED:
         raise InvalidTripStateTransitionError(trip_id, trip.status.value, TripStatus.COMPLETED.value)
 
+    vehicle = database_session.query(Vehicle).filter(Vehicle.id == trip.vehicle_id).first()
+    if vehicle is not None and complete_request.final_odometer_km < float(vehicle.odometer_km):
+        raise FinalOdometerRegressionError(
+            vehicle.id,
+            float(vehicle.odometer_km),
+            complete_request.final_odometer_km,
+        )
+
     # Update trip fields
     trip.final_odometer_km = complete_request.final_odometer_km
     trip.fuel_consumed_liters = complete_request.fuel_consumed_liters
@@ -54,7 +63,6 @@ def complete_trip(
     trip.completed_at = datetime.now(timezone.utc)
 
     # Update vehicle: odometer and status
-    vehicle = database_session.query(Vehicle).filter(Vehicle.id == trip.vehicle_id).first()
     if vehicle is not None:
         vehicle.odometer_km = complete_request.final_odometer_km
         vehicle.status = VehicleStatus.AVAILABLE

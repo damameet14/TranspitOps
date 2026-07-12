@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import apiClient from '../shared/api_client';
+import FeedbackCard from '../shared/feedback_card';
+import { getApiErrorMessage } from '../shared/api_error_message';
 
 interface Expense {
   id: number; vehicle_id: number; type: string; amount: number; expense_date: string;
@@ -9,9 +11,10 @@ interface Expense {
 export default function ExpensesPage() {
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [loading, setLoading] = useState(true);
+  const [feedbackMessage, setFeedbackMessage] = useState('');
 
   useEffect(() => {
-    apiClient.get('/expenses').then(r => setExpenses(r.data)).catch(console.error).finally(() => setLoading(false));
+    apiClient.get('/expenses').then(r => setExpenses(r.data)).catch(error => setFeedbackMessage(getApiErrorMessage(error, 'Expenses could not be loaded.'))).finally(() => setLoading(false));
   }, []);
 
   if (loading) return <div className="page-content"><p className="text-muted">Loading...</p></div>;
@@ -20,6 +23,7 @@ export default function ExpensesPage() {
     <>
       <div className="topbar"><h2 className="topbar-title">Expenses</h2></div>
       <div className="page-content">
+        <FeedbackCard message={feedbackMessage} onDismiss={() => setFeedbackMessage('')} />
         <div className="card">
           <div className="data-table-container">
             <table className="data-table">

@@ -12,6 +12,8 @@ import {
 import { Bar, Pie } from 'react-chartjs-2';
 import apiClient from '../shared/api_client';
 import { getResolvedMotionLevel } from '../animation/reducedMotion';
+import FeedbackCard from '../shared/feedback_card';
+import { getApiErrorMessage } from '../shared/api_error_message';
 
 // Register Chart.js components
 ChartJS.register(
@@ -25,21 +27,20 @@ ChartJS.register(
 );
 
 const CHART_COLORS = ['#B85C4F', '#4A6B8A', '#7A9270', '#C79A5B', '#8B76A8', '#A9A79E'];
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
-
 type ReportType = 'trip-summary' | 'expense-breakdown' | 'driver-performance' | 'maintenance-cost';
 
 export default function ReportsPage() {
   const [activeReport, setActiveReport] = useState<ReportType>('trip-summary');
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  const [feedbackMessage, setFeedbackMessage] = useState('');
 
   const fetchReport = (type: ReportType) => {
     setLoading(true);
     setActiveReport(type);
     apiClient.get(`/reports/${type}`)
       .then(r => setData(r.data))
-      .catch(console.error)
+      .catch(error => setFeedbackMessage(getApiErrorMessage(error, 'The report could not be loaded.')))
       .finally(() => setLoading(false));
   };
 
@@ -47,9 +48,16 @@ export default function ReportsPage() {
     fetchReport('trip-summary');
   }, []);
 
-  const downloadExport = (format: 'csv' | 'pdf') => {
-    const token = localStorage.getItem('access_token');
-    window.open(`${API_BASE}/reports/${activeReport}/${format}?token=${token}`, '_blank');
+  const downloadExport = async (format: 'csv' | 'pdf') => {
+    try {
+      const response = await apiClient.get(`/reports/${activeReport}/${format}`, { responseType: 'blob' });
+      const downloadUrl = URL.createObjectURL(response.data);
+      const downloadLink = document.createElement('a');
+      downloadLink.href = downloadUrl;
+      downloadLink.download = `${activeReport}.${format}`;
+      downloadLink.click();
+      URL.revokeObjectURL(downloadUrl);
+    } catch (error) { setFeedbackMessage(getApiErrorMessage(error, 'The report export could not be downloaded.')); }
   };
 
   return (
@@ -62,6 +70,7 @@ export default function ReportsPage() {
         </div>
       </div>
       <div className="page-content">
+        <FeedbackCard message={feedbackMessage} onDismiss={() => setFeedbackMessage('')} />
         <div className="filters-bar mb-6" style={{ display: 'flex', gap: 'var(--space-2)', marginBottom: 'var(--space-4)' }}>
           {([
             ['trip-summary', 'Trip Summary'],
