@@ -10,7 +10,8 @@ from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
 from source.application_startup.database_connection import get_database_session
-from source.shared_infrastructure.database_models.user_account_model import UserAccount
+from source.shared_infrastructure.database_models.user_account_model import UserAccount, UserRole
+from source.shared_infrastructure.database_models.driver_model import Driver
 from source.shared_infrastructure.role_based_access_control import get_current_authenticated_user
 
 from source.modules.operational_dashboard.operational_dashboard_contracts import DashboardKpiResult
@@ -32,9 +33,16 @@ def get_dashboard_kpis(
     region: str | None = Query(None),
 ) -> DashboardKpiResult:
     """Return all operational KPI metrics for the dashboard. All roles can access."""
+    trip_driver_ids = None
+    if current_user.role == UserRole.DRIVER:
+        trip_driver_ids = [current_user.driver_id] if current_user.driver_id else []
+    elif current_user.role == UserRole.FLEET_MANAGER:
+        trip_driver_ids = [identifier for (identifier,) in database_session.query(Driver.id).filter(Driver.fleet_manager_id == current_user.id).all()]
     return calculate_dashboard_kpis(
         database_session,
         vehicle_type_filter=vehicle_type,
         vehicle_status_filter=vehicle_status,
         region_filter=region,
+        trip_driver_ids=trip_driver_ids,
+        include_financial_metrics=current_user.role in (UserRole.ADMIN, UserRole.FINANCIAL_ANALYST),
     )

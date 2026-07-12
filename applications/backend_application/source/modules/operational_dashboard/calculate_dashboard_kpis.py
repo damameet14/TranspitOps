@@ -28,6 +28,8 @@ def calculate_dashboard_kpis(
     vehicle_type_filter: str | None = None,
     vehicle_status_filter: str | None = None,
     region_filter: str | None = None,
+    trip_driver_ids: list[int] | None = None,
+    include_financial_metrics: bool = True,
 ) -> DashboardKpiResult:
     """Aggregate all KPI metrics in a single database round-trip batch."""
 
@@ -70,7 +72,10 @@ def calculate_dashboard_kpis(
         suspended=driver_status_counts.get(DriverStatus.SUSPENDED, 0),
     )
 
-    avg_safety = database_session.query(func.avg(Driver.safety_score)).scalar() or 0
+    safety_query = database_session.query(func.avg(Driver.safety_score))
+    if trip_driver_ids is not None:
+        safety_query = safety_query.filter(Driver.id.in_(trip_driver_ids))
+    avg_safety = safety_query.scalar() or 0
     expired_count = (
         database_session.query(func.count(Driver.id))
         .filter(Driver.license_expiry_date < date.today())
@@ -78,11 +83,10 @@ def calculate_dashboard_kpis(
     ) or 0
 
     # ── Trip counts ───────────────────────────────────────
-    trip_status_counts = dict(
-        database_session.query(Trip.status, func.count(Trip.id))
-        .filter(Trip.vehicle_id.in_(filtered_vehicle_ids))
-        .group_by(Trip.status).all()
-    ) if filtered_vehicle_ids else {}
+    trip_query = database_session.query(Trip.status, func.count(Trip.id)).filter(Trip.vehicle_id.in_(filtered_vehicle_ids))
+    if trip_driver_ids is not None:
+        trip_query = trip_query.filter(Trip.driver_id.in_(trip_driver_ids))
+    trip_status_counts = dict(trip_query.group_by(Trip.status).all()) if filtered_vehicle_ids else {}
     total_trips = sum(trip_status_counts.values())
     active_trips = (
         trip_status_counts.get(TripStatus.DRAFT, 0)
@@ -97,6 +101,8 @@ def calculate_dashboard_kpis(
         .filter(Trip.status == TripStatus.COMPLETED, Trip.vehicle_id.in_(filtered_vehicle_ids))
         .scalar()
     )
+    if trip_driver_ids is not None:
+        total_revenue = float(database_session.query(func.coalesce(func.sum(Trip.revenue), 0)).filter(Trip.status == TripStatus.COMPLETED, Trip.driver_id.in_(trip_driver_ids)).scalar())
 
     total_fuel_cost = float(
         database_session.query(func.coalesce(func.sum(FuelLog.cost), 0))
@@ -112,6 +118,9 @@ def calculate_dashboard_kpis(
         database_session.query(func.coalesce(func.sum(MaintenanceLog.cost), 0))
         .filter(MaintenanceLog.vehicle_id.in_(filtered_vehicle_ids)).scalar()
     )
+
+    if not include_financial_metrics:
+        total_revenue = total_fuel_cost = total_expenses = total_maintenance_cost = 0
 
     return DashboardKpiResult(
         total_vehicles=total_vehicles,

@@ -23,6 +23,8 @@ def register_all_routes(application: FastAPI) -> None:
     )
 
     application.include_router(user_authentication_router, prefix="/api")
+    from source.modules.user_administration.user_administration_transport import user_administration_router
+    application.include_router(user_administration_router, prefix="/api")
     application.include_router(vehicle_registry_router, prefix="/api")
     application.include_router(vehicle_document_router, prefix="/api")
     application.include_router(driver_management_router, prefix="/api")
@@ -37,6 +39,8 @@ def register_all_routes(application: FastAPI) -> None:
 
     application.include_router(trip_lifecycle_router, prefix="/api")
     application.include_router(maintenance_tracking_router, prefix="/api")
+    from source.modules.location_catalog.location_catalog_transport import location_catalog_router
+    application.include_router(location_catalog_router, prefix="/api")
 
     # Phase 4: Fuel/Expenses, Dashboard, Reports, Route Optimization
     from source.modules.fuel_and_expense_tracking.fuel_and_expense_transport import (

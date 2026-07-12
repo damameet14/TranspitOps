@@ -48,7 +48,7 @@ fuel_and_expense_router = APIRouter(tags=["fuel and expense tracking"])
 
 @fuel_and_expense_router.get("/fuel-logs", response_model=list[FuelLogResponse])
 def list_fuel_logs(
-    current_user: Annotated[UserAccount, Depends(get_current_authenticated_user)],
+    current_user: Annotated[UserAccount, Depends(require_role(UserRole.FINANCIAL_ANALYST))],
     database_session: Annotated[Session, Depends(get_database_session)],
     vehicle_id: Optional[int] = Query(None),
 ) -> list[FuelLogResponse]:
@@ -62,7 +62,7 @@ def create_new_fuel_log(
     create_request: CreateFuelLogRequest,
     current_user: Annotated[
         UserAccount,
-        Depends(require_role(UserRole.FLEET_MANAGER, UserRole.FINANCIAL_ANALYST)),
+        Depends(require_role(UserRole.FINANCIAL_ANALYST)),
     ],
     database_session: Annotated[Session, Depends(get_database_session)],
 ) -> FuelLogResponse:
@@ -75,7 +75,7 @@ def create_new_fuel_log(
 
 @fuel_and_expense_router.get("/expenses", response_model=list[ExpenseResponse])
 def list_expenses(
-    current_user: Annotated[UserAccount, Depends(get_current_authenticated_user)],
+    current_user: Annotated[UserAccount, Depends(require_role(UserRole.FINANCIAL_ANALYST))],
     database_session: Annotated[Session, Depends(get_database_session)],
     vehicle_id: Optional[int] = Query(None),
     type: Optional[str] = Query(None),
@@ -94,7 +94,7 @@ def create_new_expense(
     create_request: CreateExpenseRequest,
     current_user: Annotated[
         UserAccount,
-        Depends(require_role(UserRole.FLEET_MANAGER, UserRole.FINANCIAL_ANALYST)),
+        Depends(require_role(UserRole.FINANCIAL_ANALYST)),
     ],
     database_session: Annotated[Session, Depends(get_database_session)],
 ) -> ExpenseResponse:
@@ -105,7 +105,7 @@ def create_new_expense(
 
 @fuel_and_expense_router.get("/expenses/types", response_model=list[str])
 def list_expense_types(
-    current_user: Annotated[UserAccount, Depends(get_current_authenticated_user)],
+    current_user: Annotated[UserAccount, Depends(require_role(UserRole.FINANCIAL_ANALYST))],
     database_session: Annotated[Session, Depends(get_database_session)],
 ) -> list[str]:
     """List distinct expense types for filter dropdowns."""

@@ -3,13 +3,14 @@
 import enum
 from datetime import datetime, timezone
 
-from sqlalchemy import DateTime, Enum, ForeignKey, String
+from sqlalchemy import Boolean, DateTime, Enum, ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from source.application_startup.database_connection import DatabaseBaseModel
 
 
 class UserRole(str, enum.Enum):
+    ADMIN = "admin"
     FLEET_MANAGER = "fleet_manager"
     DRIVER = "driver"
     SAFETY_OFFICER = "safety_officer"
@@ -27,6 +28,7 @@ class UserAccount(DatabaseBaseModel):
     driver_id: Mapped[int | None] = mapped_column(
         ForeignKey("drivers.id"), unique=True, nullable=True, index=True
     )
+    is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         default=lambda: datetime.now(timezone.utc),

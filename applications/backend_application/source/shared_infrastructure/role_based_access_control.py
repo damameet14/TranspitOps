@@ -61,6 +61,11 @@ def get_current_authenticated_user(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail={"detail": "User account not found.", "code": "USER_NOT_FOUND"},
         )
+    if not getattr(user_account, "is_active", True):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail={"detail": "This user account is deactivated.", "code": "ACCOUNT_DEACTIVATED"},
+        )
 
     return user_account
 
@@ -74,7 +79,7 @@ def require_role(*allowed_roles: UserRole):
     def role_checker(
         current_user: Annotated[UserAccount, Depends(get_current_authenticated_user)],
     ) -> UserAccount:
-        if current_user.role not in allowed_roles:
+        if current_user.role != UserRole.ADMIN and current_user.role not in allowed_roles:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail={

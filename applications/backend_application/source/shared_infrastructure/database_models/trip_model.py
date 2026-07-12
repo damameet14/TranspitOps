@@ -1,9 +1,9 @@
 """SQLAlchemy model for trips with lifecycle state tracking."""
 
 import enum
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 
-from sqlalchemy import DateTime, Enum, ForeignKey, Numeric, String
+from sqlalchemy import Date, DateTime, Enum, ForeignKey, Numeric, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from source.application_startup.database_connection import DatabaseBaseModel
@@ -22,6 +22,11 @@ class Trip(DatabaseBaseModel):
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     source: Mapped[str] = mapped_column(String(255), nullable=False)
     destination: Mapped[str] = mapped_column(String(255), nullable=False)
+    source_street_address: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    destination_street_address: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    source_location_id: Mapped[int | None] = mapped_column(ForeignKey("service_locations.id"), nullable=True)
+    destination_location_id: Mapped[int | None] = mapped_column(ForeignKey("service_locations.id"), nullable=True)
+    trip_date: Mapped[date] = mapped_column(Date, nullable=False, default=lambda: datetime.now(timezone.utc).date())
     vehicle_id: Mapped[int] = mapped_column(ForeignKey("vehicles.id"), nullable=False)
     driver_id: Mapped[int] = mapped_column(ForeignKey("drivers.id"), nullable=False)
     cargo_weight_kg: Mapped[float] = mapped_column(Numeric(10, 2), nullable=False)

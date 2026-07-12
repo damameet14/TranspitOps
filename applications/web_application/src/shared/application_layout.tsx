@@ -11,6 +11,7 @@ const NAVIGATION_SECTIONS = [
   { label: 'Operations', links: [{ to: '/trips', label: 'Trips', icon: 'trips' as const }, { to: '/maintenance', label: 'Maintenance', icon: 'maintenance' as const }] },
   { label: 'Finance', links: [{ to: '/fuel-logs', label: 'Fuel Logs', icon: 'fuel' as const }, { to: '/expenses', label: 'Expenses', icon: 'expenses' as const }] },
   { label: 'Analytics', links: [{ to: '/reports', label: 'Reports', icon: 'reports' as const }] },
+  { label: 'Administration', links: [{ to: '/admin', label: 'User Administration', icon: 'users' as const }] },
 ];
 
 export default function ApplicationLayout() {

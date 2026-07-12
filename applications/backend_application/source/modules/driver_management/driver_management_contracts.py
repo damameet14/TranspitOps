@@ -44,5 +44,12 @@ class DriverResponse(BaseModel):
     is_license_expired: bool
     created_at: datetime
     updated_at: datetime
+    fleet_manager_id: int | None = None
+    current_location_id: int | None = None
 
     model_config = {"from_attributes": True}
+
+
+class DriverRecommendationResponse(DriverResponse):
+    recommendation_score: int
+    recommendation_reason: str

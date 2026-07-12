@@ -1,4 +1,4 @@
-export const USER_ROLES = ['fleet_manager', 'driver', 'safety_officer', 'financial_analyst'] as const;
+export const USER_ROLES = ['admin', 'fleet_manager', 'driver', 'safety_officer', 'financial_analyst'] as const;
 export type UserRole = (typeof USER_ROLES)[number];
 
 export interface RoleOption {
@@ -18,14 +18,15 @@ export const ROLE_OPTIONS: RoleOption[] = [
 
 const ROUTE_ROLES: Record<string, UserRole[]> = {
   '/dashboard': [...USER_ROLES],
-  '/vehicles': ['fleet_manager'],
-  '/vehicle-documents': ['fleet_manager', 'safety_officer'],
-  '/drivers': ['fleet_manager', 'safety_officer'],
-  '/trips': ['fleet_manager', 'driver'],
-  '/maintenance': ['fleet_manager', 'safety_officer'],
-  '/fuel-logs': ['fleet_manager', 'financial_analyst'],
-  '/expenses': ['fleet_manager', 'financial_analyst'],
-  '/reports': ['fleet_manager', 'safety_officer', 'financial_analyst'],
+  '/vehicles': ['admin', 'fleet_manager'],
+  '/vehicle-documents': ['admin', 'fleet_manager', 'safety_officer'],
+  '/drivers': ['admin', 'fleet_manager', 'safety_officer'],
+  '/trips': ['admin', 'fleet_manager', 'driver'],
+  '/maintenance': ['admin', 'fleet_manager', 'safety_officer'],
+  '/fuel-logs': ['admin', 'financial_analyst'],
+  '/expenses': ['admin', 'financial_analyst'],
+  '/reports': ['admin', 'safety_officer', 'financial_analyst'],
+  '/admin': ['admin'],
 };
 
 export function canRoleAccessRoute(role: UserRole | undefined, route: string): boolean {

@@ -9,6 +9,7 @@ def ensure_database_schema_compatibility(database_engine: Engine) -> None:
         return
 
     with database_engine.begin() as connection:
+        connection.execute(text("ALTER TYPE userrole ADD VALUE IF NOT EXISTS 'ADMIN'"))
         connection.execute(text("ALTER TABLE drivers ADD COLUMN IF NOT EXISTS email VARCHAR(255)"))
         connection.execute(text(
             "UPDATE drivers SET email = 'driver-' || id || '@transitops.local' WHERE email IS NULL"
@@ -16,6 +17,18 @@ def ensure_database_schema_compatibility(database_engine: Engine) -> None:
         connection.execute(text("ALTER TABLE drivers ALTER COLUMN email SET NOT NULL"))
         connection.execute(text("CREATE UNIQUE INDEX IF NOT EXISTS ix_drivers_email ON drivers (email)"))
         connection.execute(text("ALTER TABLE user_accounts ADD COLUMN IF NOT EXISTS driver_id INTEGER"))
+        connection.execute(text("ALTER TABLE user_accounts ADD COLUMN IF NOT EXISTS is_active BOOLEAN NOT NULL DEFAULT TRUE"))
+        connection.execute(text("ALTER TABLE drivers ADD COLUMN IF NOT EXISTS fleet_manager_id INTEGER"))
+        connection.execute(text("ALTER TABLE drivers ADD COLUMN IF NOT EXISTS current_location_id INTEGER"))
+        connection.execute(text("CREATE INDEX IF NOT EXISTS ix_drivers_fleet_manager_id ON drivers (fleet_manager_id)"))
+        connection.execute(text("CREATE INDEX IF NOT EXISTS ix_drivers_current_location_id ON drivers (current_location_id)"))
+        connection.execute(text("ALTER TABLE trips ADD COLUMN IF NOT EXISTS source_street_address VARCHAR(255)"))
+        connection.execute(text("ALTER TABLE trips ADD COLUMN IF NOT EXISTS destination_street_address VARCHAR(255)"))
+        connection.execute(text("ALTER TABLE trips ADD COLUMN IF NOT EXISTS source_location_id INTEGER"))
+        connection.execute(text("ALTER TABLE trips ADD COLUMN IF NOT EXISTS destination_location_id INTEGER"))
+        connection.execute(text("ALTER TABLE trips ADD COLUMN IF NOT EXISTS trip_date DATE"))
+        connection.execute(text("UPDATE trips SET trip_date = created_at::date WHERE trip_date IS NULL"))
+        connection.execute(text("ALTER TABLE trips ALTER COLUMN trip_date SET NOT NULL"))
         connection.execute(text(
             "CREATE UNIQUE INDEX IF NOT EXISTS ix_user_accounts_driver_id "
             "ON user_accounts (driver_id) WHERE driver_id IS NOT NULL"

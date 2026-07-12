@@ -1,5 +1,7 @@
 # Trip Lifecycle Management
 
+Owns current trip drafting, dispatch/completion/cancellation, structured service-location addresses, dated historical-trip capture, and driver/vehicle assignment validation. Drivers may read and update only their own assigned trips; fleet managers may create and view trips for drivers assigned to their team; administrators have global access.
+
 ## Purpose
 Manages the full lifecycle of delivery trips — from creation through dispatch, completion, and cancellation — enforcing all business rules related to vehicle and driver availability.
 

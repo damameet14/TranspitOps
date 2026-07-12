@@ -65,7 +65,7 @@ def authenticate_user_credentials(
         .first()
     )
 
-    if user_account is None:
+    if user_account is None or not getattr(user_account, "is_active", True):
         return None
 
     if not verify_password(submitted_password, user_account.hashed_password):

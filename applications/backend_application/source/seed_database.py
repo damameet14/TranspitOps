@@ -31,11 +31,18 @@ from source.shared_infrastructure.database_models.maintenance_log_model import M
 from source.shared_infrastructure.database_models.fuel_log_model import FuelLog
 from source.shared_infrastructure.database_models.expense_model import Expense
 from source.modules.user_authentication.authenticate_user_credentials import hash_password
+from source.shared_infrastructure.database_models.service_location_model import ServiceLocation
 
 
 def seed_users(session):
     """Create 4 demo users, one per role."""
     users = [
+        UserAccount(
+            email="admin@transitops.io",
+            hashed_password=hash_password("admin123"),
+            full_name="System Administrator",
+            role=UserRole.ADMIN,
+        ),
         UserAccount(
             email="fleet@transitops.io",
             hashed_password=hash_password("fleet123"),
@@ -67,6 +74,15 @@ def seed_users(session):
             session.add(user)
     session.commit()
     print("✓ Users seeded")
+
+
+def seed_service_locations(session):
+    """Create database-backed city and state choices used by trip forms."""
+    choices = [("Ahmedabad", "Gujarat"), ("Gandhinagar", "Gujarat"), ("Vadodara", "Gujarat"), ("Rajkot", "Gujarat"), ("Surat", "Gujarat"), ("Mumbai", "Maharashtra"), ("Pune", "Maharashtra"), ("Udaipur", "Rajasthan")]
+    for city, state in choices:
+        if not session.query(ServiceLocation.id).filter(ServiceLocation.city == city, ServiceLocation.state == state).first():
+            session.add(ServiceLocation(city=city, state=state))
+    session.commit()
 
 
 def seed_vehicles(session):
@@ -313,6 +329,12 @@ def link_demo_driver_account(session):
     ).first()
     if driver_user is not None and alex_driver is not None:
         driver_user.driver_id = alex_driver.id
+        fleet_manager = session.query(UserAccount).filter(UserAccount.email == "fleet@transitops.io").first()
+        alex_driver.fleet_manager_id = fleet_manager.id if fleet_manager else None
+        alex_driver.current_location_id = session.query(ServiceLocation.id).filter(ServiceLocation.city == "Ahmedabad").scalar()
+        if fleet_manager:
+            for driver in session.query(Driver).filter(Driver.fleet_manager_id.is_(None)).all():
+                driver.fleet_manager_id = fleet_manager.id
         session.commit()
     print("Driver login linked to its driver record")
 
@@ -614,6 +636,7 @@ def run_seed():
     import source.shared_infrastructure.database_models.expense_model  # noqa: F401
     import source.shared_infrastructure.database_models.route_suggestion_model  # noqa: F401
     import source.shared_infrastructure.database_models.vehicle_document_model  # noqa: F401
+    import source.shared_infrastructure.database_models.service_location_model  # noqa: F401
 
     # Create tables
     DatabaseBaseModel.metadata.create_all(bind=database_engine)
@@ -622,6 +645,7 @@ def run_seed():
     session = DatabaseSessionFactory()
     try:
         seed_users(session)
+        seed_service_locations(session)
         seed_vehicles(session)
         seed_drivers(session)
         link_demo_driver_account(session)

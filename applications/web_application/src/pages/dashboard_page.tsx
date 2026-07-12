@@ -3,6 +3,7 @@ import apiClient from '../shared/api_client';
 import { getResolvedMotionLevel } from '../animation/reducedMotion';
 import FeedbackCard from '../shared/feedback_card';
 import { getApiErrorMessage } from '../shared/api_error_message';
+import { useAuth } from '../shared/auth_context';
 
 interface DashboardKpis {
   total_vehicles: number;
@@ -26,6 +27,7 @@ interface DashboardKpis {
 }
 
 export default function DashboardPage() {
+  const { user } = useAuth();
   const [kpis, setKpis] = useState<DashboardKpis | null>(null);
   const [loading, setLoading] = useState(true);
   const [feedbackMessage, setFeedbackMessage] = useState('');
@@ -47,38 +49,37 @@ export default function DashboardPage() {
   if (!kpis) return <div className="page-content"><FeedbackCard message={feedbackMessage || 'Dashboard metrics could not be loaded.'} /></div>;
 
   const formatCurrency = (value: number) => `₹${value.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`;
+  const roleDashboardCards: Array<[string, string | number]> = user?.role === 'driver'
+    ? [['My Active Trips', kpis.active_trips], ['My Pending Trips', kpis.pending_trips], ['My Completed Trips', kpis.completed_trips], ['My Safety Score', kpis.average_safety_score]]
+    : user?.role === 'safety_officer'
+      ? [['Drivers On Duty', kpis.drivers_on_duty], ['Average Safety Score', kpis.average_safety_score], ['Expired Licenses', kpis.drivers_with_expired_license], ['Vehicles In Maintenance', kpis.fleet_status.in_shop]]
+      : user?.role === 'financial_analyst'
+        ? [['Completed Trips', kpis.completed_trips], ['Revenue', formatCurrency(kpis.total_revenue)], ['Fuel Cost', formatCurrency(kpis.total_fuel_cost)], ['Operating Expenses', formatCurrency(kpis.total_expenses)], ['Maintenance Cost', formatCurrency(kpis.total_maintenance_cost)]]
+        : user?.role === 'admin'
+          ? [['Active Vehicles', kpis.active_vehicles], ['Drivers On Duty', kpis.drivers_on_duty], ['Pending Trips', kpis.pending_trips], ['Completed Trips', kpis.completed_trips], ['Fleet Utilization', `${kpis.fleet_utilization_percent}%`], ['Revenue', formatCurrency(kpis.total_revenue)], ['Fuel Cost', formatCurrency(kpis.total_fuel_cost)], ['Expenses', formatCurrency(kpis.total_expenses)], ['Maintenance Cost', formatCurrency(kpis.total_maintenance_cost)]]
+          : [['Active Vehicles', kpis.active_vehicles], ['Drivers On Duty', kpis.drivers_on_duty], ['Pending Trips', kpis.pending_trips], ['Active Trips', kpis.active_trips], ['Completed Trips', kpis.completed_trips], ['Fleet Utilization', `${kpis.fleet_utilization_percent}%`]];
 
   return (
     <>
       <div className="topbar">
-        <h2 className="topbar-title">Dashboard</h2>
+        <h2 className="topbar-title">{user?.role === 'admin' ? 'Executive Dashboard' : user?.role === 'driver' ? 'My Driver Dashboard' : user?.role === 'safety_officer' ? 'Safety & Compliance Dashboard' : user?.role === 'financial_analyst' ? 'Financial Dashboard' : 'Fleet Operations Dashboard'}</h2>
       </div>
       <div className="page-content">
         <FeedbackCard message={feedbackMessage} onDismiss={() => setFeedbackMessage('')} />
-        <div className="card mb-6">
+        {(user?.role === 'fleet_manager' || user?.role === 'admin') && <div className="card mb-6">
           <div className="form-row">
             <div className="form-group"><label className="form-label">Vehicle Type</label><select className="form-select" value={filters.vehicle_type} onChange={event => setFilters({...filters, vehicle_type:event.target.value})}><option value="">All types</option><option value="truck">Truck</option><option value="van">Van</option><option value="bus">Bus</option><option value="bike">Bike</option></select></div>
             <div className="form-group"><label className="form-label">Vehicle Status</label><select className="form-select" value={filters.vehicle_status} onChange={event => setFilters({...filters, vehicle_status:event.target.value})}><option value="">All statuses</option><option value="available">Available</option><option value="on_trip">On trip</option><option value="in_shop">In shop</option><option value="retired">Retired</option></select></div>
             <div className="form-group"><label className="form-label">Region</label><select className="form-select" value={filters.region} onChange={event => setFilters({...filters, region:event.target.value})}><option value="">All regions</option>{regions.map(region => <option key={region} value={region}>{region}</option>)}</select></div>
           </div>
-        </div>
+        </div>}
         {/* KPI Cards */}
         <div className="kpi-grid">
-          <KpiCard label="Active Vehicles" value={kpis.active_vehicles} />
-          <KpiCard label="Drivers On Duty" value={kpis.drivers_on_duty} />
-          <KpiCard label="Pending Trips" value={kpis.pending_trips} />
-          <KpiCard label="Active Trips" value={kpis.active_trips} />
-          <KpiCard label="Completed Trips" value={kpis.completed_trips} />
-          <KpiCard label="Fleet Utilization" value={`${kpis.fleet_utilization_percent}%`} />
-          <KpiCard label="Avg Safety Score" value={kpis.average_safety_score} />
-          <KpiCard label="Total Revenue" value={formatCurrency(kpis.total_revenue)} />
-          <KpiCard label="Total Fuel Cost" value={formatCurrency(kpis.total_fuel_cost)} />
-          <KpiCard label="Total Expenses" value={formatCurrency(kpis.total_expenses)} />
-          <KpiCard label="Maintenance Cost" value={formatCurrency(kpis.total_maintenance_cost)} />
+          {roleDashboardCards.map(([label, value]) => <KpiCard key={label} label={label} value={value} />)}
         </div>
 
         {/* Status Breakdowns */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-5)' }}>
+        {(user?.role === 'admin' || user?.role === 'fleet_manager' || user?.role === 'safety_officer') && <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 'var(--space-5)' }}>
           <div className="card">
             <div className="card-header"><h3 className="card-title">Fleet Status</h3></div>
             <StatusRow label="Available" count={kpis.fleet_status.available} badgeClass="status-badge-available" />
@@ -99,7 +100,7 @@ export default function DashboardPage() {
               </div>
             )}
           </div>
-        </div>
+        </div>}
       </div>
     </>
   );

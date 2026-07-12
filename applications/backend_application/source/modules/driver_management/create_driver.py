@@ -29,6 +29,7 @@ class DuplicateDriverEmailError(TransitOpsError):
 def create_driver(
     database_session: Session,
     create_request: CreateDriverRequest,
+    fleet_manager_id: int | None = None,
 ) -> Driver:
     """Insert a new driver record. Raises 409 if license number is taken."""
     existing_email_driver = database_session.query(Driver.id).filter(
@@ -46,6 +47,7 @@ def create_driver(
         contact_number=create_request.contact_number,
         safety_score=create_request.safety_score,
         status=DriverStatus.AVAILABLE,
+        fleet_manager_id=fleet_manager_id,
     )
 
     database_session.add(new_driver)
