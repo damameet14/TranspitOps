@@ -27,6 +27,7 @@ from source.shared_infrastructure.role_based_access_control import (
     require_role,
 )
 from source.shared_infrastructure.transit_ops_email_notifications import (
+    notify_driver_of_trip_status_change,
     notify_user_of_trip_status_change,
 )
 
@@ -98,7 +99,7 @@ def dispatch_existing_trip(
 ) -> TripResponse:
     """Dispatch a trip (Draft → Dispatched). Fleet Manager or Driver only."""
     trip = dispatch_trip(database_session, trip_id)
-    notify_user_of_trip_status_change(current_user, trip, "dispatched")
+    _notify_trip_recipients(current_user, trip, "dispatched")
     return _trip_to_response(trip)
 
 
@@ -114,7 +115,7 @@ def complete_existing_trip(
 ) -> TripResponse:
     """Complete a trip (Dispatched → Completed). Fleet Manager or Driver only."""
     trip = complete_trip(database_session, trip_id, complete_request)
-    notify_user_of_trip_status_change(current_user, trip, "completed")
+    _notify_trip_recipients(current_user, trip, "completed")
     return _trip_to_response(trip)
 
 
@@ -129,7 +130,7 @@ def cancel_existing_trip(
 ) -> TripResponse:
     """Cancel a trip from Draft or Dispatched. Fleet Manager or Driver only."""
     trip = cancel_trip(database_session, trip_id)
-    notify_user_of_trip_status_change(current_user, trip, "cancelled")
+    _notify_trip_recipients(current_user, trip, "cancelled")
     return _trip_to_response(trip)
 
 
@@ -155,3 +156,11 @@ def _trip_to_response(trip) -> TripResponse:
         vehicle_name_model=trip.vehicle.name_model if trip.vehicle else None,
         driver_name=trip.driver.name if trip.driver else None,
     )
+
+
+def _notify_trip_recipients(current_user: UserAccount, trip, status_action: str) -> None:
+    """Notify the operator and assigned driver without duplicating the same address."""
+    notify_user_of_trip_status_change(current_user, trip, status_action)
+    driver_email = getattr(trip.driver, "email", None) if trip.driver else None
+    if driver_email and driver_email.lower() != current_user.email.lower():
+        notify_driver_of_trip_status_change(trip.driver, trip, status_action)

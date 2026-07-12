@@ -5,7 +5,10 @@ from sqlalchemy.orm import Session
 
 from source.shared_infrastructure.database_models.driver_model import Driver, DriverStatus
 from source.shared_infrastructure.standard_error_responses import ResourceNotFoundError
-from source.modules.driver_management.create_driver import DuplicateLicenseNumberError
+from source.modules.driver_management.create_driver import (
+    DuplicateDriverEmailError,
+    DuplicateLicenseNumberError,
+)
 from source.modules.driver_management.driver_management_contracts import UpdateDriverRequest
 
 
@@ -19,8 +22,18 @@ def update_driver(
     if driver is None:
         raise ResourceNotFoundError("Driver", driver_id)
 
+    if update_request.email is not None:
+        existing_email_driver = database_session.query(Driver.id).filter(
+            Driver.email == str(update_request.email),
+            Driver.id != driver_id,
+        ).first()
+        if existing_email_driver is not None:
+            raise DuplicateDriverEmailError(str(update_request.email))
+
     if update_request.name is not None:
         driver.name = update_request.name
+    if update_request.email is not None:
+        driver.email = str(update_request.email)
     if update_request.license_number is not None:
         driver.license_number = update_request.license_number
     if update_request.license_category is not None:

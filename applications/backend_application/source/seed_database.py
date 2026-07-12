@@ -189,6 +189,7 @@ def seed_drivers(session):
     drivers = [
         Driver(
             name="Amit Kumar",
+            email="amit.kumar@transitops.io",
             license_number="GJ-DL-2020-001",
             license_category="LMV-TR",
             license_expiry_date=date(2027, 6, 15),
@@ -198,6 +199,7 @@ def seed_drivers(session):
         ),
         Driver(
             name="Suresh Yadav",
+            email="suresh.yadav@transitops.io",
             license_number="GJ-DL-2019-002",
             license_category="HMV",
             license_expiry_date=date(2027, 3, 20),
@@ -208,6 +210,7 @@ def seed_drivers(session):
         # Alex — used in Van-05 demo scenario
         Driver(
             name="Alex Fernandez",
+            email="alex.fernandez@transitops.io",
             license_number="GJ-DL-2021-003",
             license_category="LMV-TR",
             license_expiry_date=date(2028, 1, 10),
@@ -217,6 +220,7 @@ def seed_drivers(session):
         ),
         Driver(
             name="Ramesh Patel",
+            email="ramesh.patel@transitops.io",
             license_number="GJ-DL-2018-004",
             license_category="HMV",
             license_expiry_date=date(2027, 9, 30),
@@ -226,6 +230,7 @@ def seed_drivers(session):
         ),
         Driver(
             name="Mohammed Shaikh",
+            email="mohammed.shaikh@transitops.io",
             license_number="GJ-DL-2020-005",
             license_category="LMV",
             license_expiry_date=date(2027, 12, 1),
@@ -236,6 +241,7 @@ def seed_drivers(session):
         # Suspended driver — demonstrates rule enforcement
         Driver(
             name="Kiran Joshi",
+            email="kiran.joshi@transitops.io",
             license_number="GJ-DL-2019-006",
             license_category="LMV-TR",
             license_expiry_date=date(2027, 4, 15),
@@ -246,6 +252,7 @@ def seed_drivers(session):
         # Expired license — demonstrates rule enforcement
         Driver(
             name="Deepak Verma",
+            email="deepak.verma@transitops.io",
             license_number="GJ-DL-2017-007",
             license_category="HMV",
             license_expiry_date=date(2024, 11, 30),
@@ -255,6 +262,7 @@ def seed_drivers(session):
         ),
         Driver(
             name="Nilesh Shah",
+            email="nilesh.shah@transitops.io",
             license_number="GJ-DL-2021-008",
             license_category="LMV",
             license_expiry_date=date(2028, 7, 20),
@@ -264,6 +272,7 @@ def seed_drivers(session):
         ),
         Driver(
             name="Prakash Solanki",
+            email="prakash.solanki@transitops.io",
             license_number="GJ-DL-2020-009",
             license_category="LMV-TR",
             license_expiry_date=date(2027, 8, 10),
@@ -273,6 +282,7 @@ def seed_drivers(session):
         ),
         Driver(
             name="Sanjay Thakur",
+            email="sanjay.thakur@transitops.io",
             license_number="GJ-DL-2022-010",
             license_category="HMV",
             license_expiry_date=date(2029, 2, 28),
@@ -287,6 +297,8 @@ def seed_drivers(session):
         ).first()
         if existing is None:
             session.add(driver)
+        else:
+            existing.email = driver.email
     session.commit()
     print("✓ Drivers seeded (10 drivers, including 1 suspended + 1 expired license)")
 

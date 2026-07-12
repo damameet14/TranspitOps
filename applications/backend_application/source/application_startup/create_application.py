@@ -10,6 +10,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from source.application_startup.database_connection import DatabaseBaseModel, database_engine
+from source.application_startup.database_schema_compatibility import ensure_database_schema_compatibility
 
 
 @asynccontextmanager
@@ -26,6 +27,7 @@ async def application_lifespan(application: FastAPI):
     import source.shared_infrastructure.database_models.route_suggestion_model  # noqa: F401
 
     DatabaseBaseModel.metadata.create_all(bind=database_engine)
+    ensure_database_schema_compatibility(database_engine)
     yield
 
 

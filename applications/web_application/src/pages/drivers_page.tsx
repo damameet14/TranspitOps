@@ -6,7 +6,7 @@ import FeedbackCard from '../shared/feedback_card';
 import { getApiErrorMessage } from '../shared/api_error_message';
 
 interface Driver {
-  id: number; name: string; license_number: string; license_category: string;
+  id: number; name: string; email: string; license_number: string; license_category: string;
   license_expiry_date: string; contact_number: string; safety_score: number;
   status: string; is_license_expired: boolean;
 }
@@ -20,7 +20,7 @@ export default function DriversPage() {
   const [driverPendingDeletion, setDriverPendingDeletion] = useState<Driver | null>(null);
   const [feedbackMessage, setFeedbackMessage] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
-  const [form, setForm] = useState({ name: '', license_number: '', license_category: 'LMV-TR', license_expiry_date: '', contact_number: '', safety_score: '100' });
+  const [form, setForm] = useState({ name: '', email: '', license_number: '', license_category: 'LMV-TR', license_expiry_date: '', contact_number: '', safety_score: '100' });
   const canWrite = user?.role === 'fleet_manager' || user?.role === 'safety_officer';
 
   const fetchDrivers = () => { apiClient.get('/drivers').then(r => setDrivers(r.data)).catch(error => setFeedbackMessage(getApiErrorMessage(error, 'Drivers could not be loaded.'))).finally(() => setLoading(false)); };
@@ -34,20 +34,20 @@ export default function DriversPage() {
       else await apiClient.put(`/drivers/${editingDriverId}`, driverPayload);
       setShowForm(false);
       setEditingDriverId(null);
-      setForm({ name: '', license_number: '', license_category: 'LMV-TR', license_expiry_date: '', contact_number: '', safety_score: '100' });
+      setForm({ name: '', email: '', license_number: '', license_category: 'LMV-TR', license_expiry_date: '', contact_number: '', safety_score: '100' });
       fetchDrivers();
     } catch (error) { setFeedbackMessage(getApiErrorMessage(error, editingDriverId === null ? 'Driver could not be created.' : 'Driver could not be updated.')); }
   };
 
   const openCreateForm = () => {
     setEditingDriverId(null);
-    setForm({ name: '', license_number: '', license_category: 'LMV-TR', license_expiry_date: '', contact_number: '', safety_score: '100' });
+    setForm({ name: '', email: '', license_number: '', license_category: 'LMV-TR', license_expiry_date: '', contact_number: '', safety_score: '100' });
     setShowForm(true);
   };
 
   const openEditForm = (driver: Driver) => {
     setEditingDriverId(driver.id);
-    setForm({ name: driver.name, license_number: driver.license_number, license_category: driver.license_category, license_expiry_date: driver.license_expiry_date, contact_number: driver.contact_number, safety_score: String(driver.safety_score) });
+    setForm({ name: driver.name, email: driver.email, license_number: driver.license_number, license_category: driver.license_category, license_expiry_date: driver.license_expiry_date, contact_number: driver.contact_number, safety_score: String(driver.safety_score) });
     setShowForm(true);
   };
 
@@ -82,9 +82,10 @@ export default function DriversPage() {
             <form onSubmit={handleCreate}>
               <div className="form-row">
                 <div className="form-group"><label className="form-label">Full Name</label><input className="form-input" value={form.name} onChange={e => setForm({...form, name: e.target.value})} required /></div>
-                <div className="form-group"><label className="form-label">License Number</label><input className="form-input" value={form.license_number} onChange={e => setForm({...form, license_number: e.target.value})} required /></div>
+                <div className="form-group"><label className="form-label">Email</label><input className="form-input" type="email" value={form.email} onChange={e => setForm({...form, email: e.target.value})} required /></div>
               </div>
               <div className="form-row">
+                <div className="form-group"><label className="form-label">License Number</label><input className="form-input" value={form.license_number} onChange={e => setForm({...form, license_number: e.target.value})} required /></div>
                 <div className="form-group"><label className="form-label">License Category</label><input className="form-input" value={form.license_category} onChange={e => setForm({...form, license_category: e.target.value})} required /></div>
                 <div className="form-group"><label className="form-label">License Expiry</label><input className="form-input" type="date" value={form.license_expiry_date} onChange={e => setForm({...form, license_expiry_date: e.target.value})} required /></div>
               </div>
@@ -102,11 +103,12 @@ export default function DriversPage() {
         <div className="card">
           <div className="data-table-container">
             <table className="data-table">
-              <thead><tr><th>Name</th><th>License No.</th><th>Category</th><th>Expiry</th><th>Contact</th><th>Safety</th><th>Status</th>{canWrite && <th>Actions</th>}</tr></thead>
+              <thead><tr><th>Name</th><th>Email</th><th>License No.</th><th>Category</th><th>Expiry</th><th>Contact</th><th>Safety</th><th>Status</th>{canWrite && <th>Actions</th>}</tr></thead>
               <tbody>
                 {drivers.map(d => (
                   <tr key={d.id} className={d.is_license_expired ? 'row-overdue' : ''}>
                     <td style={{fontWeight:500}}>{d.name}</td>
+                    <td>{d.email}</td>
                     <td>{d.license_number}</td>
                     <td>{d.license_category}</td>
                     <td>{d.license_expiry_date}{d.is_license_expired && <span style={{color:'var(--feedback-danger-text)',marginLeft:'var(--space-2)',fontSize:'var(--font-size-caption)'}}>EXPIRED</span>}</td>
@@ -116,7 +118,7 @@ export default function DriversPage() {
                     {canWrite && <td><div className="table-actions"><button className="button button-small button-secondary" onClick={()=>openEditForm(d)}>Edit</button><button className="button button-small button-danger" onClick={()=>setDriverPendingDeletion(d)}>Delete</button></div></td>}
                   </tr>
                 ))}
-                {drivers.length === 0 && <tr><td colSpan={8} className="data-table-empty">No drivers found</td></tr>}
+                {drivers.length === 0 && <tr><td colSpan={9} className="data-table-empty">No drivers found</td></tr>}
               </tbody>
             </table>
           </div>

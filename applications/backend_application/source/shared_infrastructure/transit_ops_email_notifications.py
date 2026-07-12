@@ -14,6 +14,7 @@ from source.shared_infrastructure.brevo_email_service import (
 )
 from source.shared_infrastructure.database_models.trip_model import Trip
 from source.shared_infrastructure.database_models.user_account_model import UserAccount
+from source.shared_infrastructure.database_models.driver_model import Driver
 
 
 TRANSIT_OPS_APPLICATION_NAME = "TransitOps"
@@ -51,6 +52,34 @@ def notify_user_of_trip_status_change(
     trip: Trip,
     status_action: str,
 ) -> BrevoEmailDeliveryResult:
+    return _notify_trip_recipient(
+        recipient_name=user_account.full_name,
+        recipient_email=user_account.email,
+        trip=trip,
+        status_action=status_action,
+    )
+
+
+def notify_driver_of_trip_status_change(
+    driver: Driver,
+    trip: Trip,
+    status_action: str,
+) -> BrevoEmailDeliveryResult:
+    """Notify the assigned driver when a trip lifecycle action succeeds."""
+    return _notify_trip_recipient(
+        recipient_name=driver.name,
+        recipient_email=driver.email,
+        trip=trip,
+        status_action=status_action,
+    )
+
+
+def _notify_trip_recipient(
+    recipient_name: str,
+    recipient_email: str,
+    trip: Trip,
+    status_action: str,
+) -> BrevoEmailDeliveryResult:
     trip_url = f"{_frontend_url()}/trips/{trip.id}"
     subject = f"TransitOps trip #{trip.id} {status_action}"
     details = {
@@ -62,7 +91,7 @@ def notify_user_of_trip_status_change(
     }
     html_content = _build_email_html(
         heading=subject,
-        greeting_name=user_account.full_name,
+        greeting_name=recipient_name,
         message=f"Trip #{trip.id} has been {status_action}.",
         details=details,
         action_url=trip_url,
@@ -71,8 +100,8 @@ def notify_user_of_trip_status_change(
     )
     return _safely_send_email(
         BrevoEmailRequest(
-            recipient_name=user_account.full_name,
-            recipient_email=user_account.email,
+            recipient_name=recipient_name,
+            recipient_email=recipient_email,
             subject=subject,
             html_content=html_content,
         )

@@ -118,6 +118,7 @@ def _driver_to_response(driver) -> DriverResponse:
     return DriverResponse(
         id=driver.id,
         name=driver.name,
+        email=driver.email,
         license_number=driver.license_number,
         license_category=driver.license_category,
         license_expiry_date=driver.license_expiry_date,

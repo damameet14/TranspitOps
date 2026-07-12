@@ -64,7 +64,7 @@ class EmailNotificationWorkflowSafetyTests(unittest.TestCase):
             completed_at=None,
             created_at=datetime(2026, 1, 1, tzinfo=timezone.utc),
             vehicle=SimpleNamespace(registration_number="GJ01AB1234", name_model="Tata Ace"),
-            driver=SimpleNamespace(name="Amit Driver"),
+            driver=SimpleNamespace(name="Amit Driver", email="amit.driver@example.com"),
         )
         current_user = SimpleNamespace(
             email="driver@example.com",
@@ -78,7 +78,10 @@ class EmailNotificationWorkflowSafetyTests(unittest.TestCase):
         ), patch(
             "source.modules.trip_lifecycle_management.trip_lifecycle_transport.notify_user_of_trip_status_change",
             return_value=BrevoEmailDeliveryResult(False, "brevo_delivery_failed"),
-        ):
+        ) as operator_notification, patch(
+            "source.modules.trip_lifecycle_management.trip_lifecycle_transport.notify_driver_of_trip_status_change",
+            return_value=BrevoEmailDeliveryResult(False, "brevo_delivery_failed"),
+        ) as driver_notification:
             result = dispatch_existing_trip(
                 trip_id=trip.id,
                 current_user=current_user,
@@ -87,6 +90,8 @@ class EmailNotificationWorkflowSafetyTests(unittest.TestCase):
 
         self.assertEqual(trip.id, result.id)
         self.assertEqual("dispatched", result.status)
+        operator_notification.assert_called_once()
+        driver_notification.assert_called_once()
 
 
 if __name__ == "__main__":

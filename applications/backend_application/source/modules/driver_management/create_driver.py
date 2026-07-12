@@ -17,13 +17,29 @@ class DuplicateLicenseNumberError(TransitOpsError):
         )
 
 
+class DuplicateDriverEmailError(TransitOpsError):
+    def __init__(self, email: str):
+        super().__init__(
+            status_code=409,
+            detail=f"Driver with email '{email}' already exists.",
+            error_code="DUPLICATE_DRIVER_EMAIL",
+        )
+
+
 def create_driver(
     database_session: Session,
     create_request: CreateDriverRequest,
 ) -> Driver:
     """Insert a new driver record. Raises 409 if license number is taken."""
+    existing_email_driver = database_session.query(Driver.id).filter(
+        Driver.email == str(create_request.email)
+    ).first()
+    if existing_email_driver is not None:
+        raise DuplicateDriverEmailError(str(create_request.email))
+
     new_driver = Driver(
         name=create_request.name,
+        email=str(create_request.email),
         license_number=create_request.license_number,
         license_category=create_request.license_category,
         license_expiry_date=create_request.license_expiry_date,

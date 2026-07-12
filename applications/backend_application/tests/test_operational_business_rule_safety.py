@@ -7,7 +7,7 @@ from unittest.mock import MagicMock
 
 from pydantic import ValidationError
 
-from source.modules.driver_management.driver_management_contracts import UpdateDriverRequest
+from source.modules.driver_management.driver_management_contracts import CreateDriverRequest, UpdateDriverRequest
 from source.modules.maintenance_tracking.create_maintenance_record import create_maintenance_record
 from source.modules.maintenance_tracking.maintenance_tracking_contracts import CreateMaintenanceRecordRequest
 from source.modules.trip_lifecycle_management.complete_trip import complete_trip
@@ -29,6 +29,18 @@ class OperationalBusinessRuleSafetyTests(unittest.TestCase):
             UpdateVehicleRequest(type="spaceship")
         with self.assertRaises(ValidationError):
             UpdateVehicleRequest(status="missing")
+
+    def test_driver_contract_requires_a_valid_email(self):
+        with self.assertRaises(ValidationError):
+            CreateDriverRequest(
+                name="Test Driver",
+                email="not-an-email",
+                license_number="TEST-001",
+                license_category="LMV",
+                license_expiry_date="2030-01-01",
+                contact_number="9999999999",
+                safety_score=90,
+            )
 
     def test_vehicle_on_trip_cannot_enter_maintenance(self):
         database_session = MagicMock()

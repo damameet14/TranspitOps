@@ -3,13 +3,14 @@
 from datetime import date, datetime
 from typing import Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, EmailStr, Field
 from source.shared_infrastructure.database_models.driver_model import DriverStatus
 
 
 class CreateDriverRequest(BaseModel):
     """Request body for POST /drivers."""
     name: str = Field(..., min_length=1, max_length=255)
+    email: EmailStr
     license_number: str = Field(..., min_length=1, max_length=50)
     license_category: str = Field(..., min_length=1, max_length=50)
     license_expiry_date: date
@@ -20,6 +21,7 @@ class CreateDriverRequest(BaseModel):
 class UpdateDriverRequest(BaseModel):
     """Request body for PUT /drivers/{driver_id}."""
     name: Optional[str] = Field(None, min_length=1, max_length=255)
+    email: Optional[EmailStr] = None
     license_number: Optional[str] = Field(None, min_length=1, max_length=50)
     license_category: Optional[str] = None
     license_expiry_date: Optional[date] = None
@@ -32,6 +34,7 @@ class DriverResponse(BaseModel):
     """Single driver in API responses."""
     id: int
     name: str
+    email: str
     license_number: str
     license_category: str
     license_expiry_date: date
