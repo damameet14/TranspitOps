@@ -174,8 +174,7 @@ TransitOps/
 │   │   │   │   ├── operational_dashboard/ # Aggregated KPIs
 │   │   │   │   ├── reporting_and_analytics/    # Reports + PDF export
 │   │   │   │   └── route_optimization/    # Rule-based route provider
-│   │   │   ├── shared_infrastructure/     # RBAC, email service, DB models, errors
-│   │   │   └── seed_database.py           # Demo data seeder
+│   │   │   └── shared_infrastructure/     # RBAC, email service, DB models, errors
 │   │   ├── tests/                         # Unit and integration tests
 │   │   ├── Dockerfile
 │   │   └── requirements.txt
@@ -282,7 +281,9 @@ The `docs/` directory contains structured documentation for the platform:
 - [Docker](https://docs.docker.com/get-docker/) and [Docker Compose](https://docs.docker.com/compose/install/) installed
 - Git
 
-### Quick Start (Docker Compose)
+### Quick Start (Docker)
+
+The fastest and recommended way to start the project is using Docker and Docker Compose.
 
 **1. Clone the repository**
 
@@ -316,17 +317,6 @@ This starts three containers:
 | Web Application | [http://localhost:5173](http://localhost:5173) |
 | API Documentation | [http://localhost:8000/docs](http://localhost:8000/docs) |
 | Health Check | [http://localhost:8000/api/health](http://localhost:8000/api/health) |
-
-**5. Login with demo credentials**
-
-The database is automatically seeded with demo accounts on first run:
-
-| Role | Email | Password |
-|---|---|---|
-| Fleet Manager | `fleet@transitops.io` | `fleet123` |
-| Driver | `driver@transitops.io` | `driver123` |
-| Safety Officer | `safety@transitops.io` | `safety123` |
-| Financial Analyst | `finance@transitops.io` | `finance123` |
 
 ---
 
