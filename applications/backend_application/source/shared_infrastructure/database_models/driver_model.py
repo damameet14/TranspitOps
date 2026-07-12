@@ -21,6 +21,7 @@ class Driver(DatabaseBaseModel):
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
+    email: Mapped[str] = mapped_column(String(255), unique=True, nullable=False, index=True)
     license_number: Mapped[str] = mapped_column(
         String(50), unique=True, nullable=False, index=True
     )
