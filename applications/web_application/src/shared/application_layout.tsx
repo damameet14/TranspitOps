@@ -3,13 +3,14 @@ import { useAuth } from './auth_context';
 import PageTransition from '../components/motion/PageTransition';
 import { canRoleAccessRoute } from './role_access';
 import { useEffect, useState } from 'react';
+import ApplicationIcon from './application_icon';
 
 const NAVIGATION_SECTIONS = [
-  { label: 'Overview', links: [{ to: '/dashboard', label: 'Dashboard', icon: 'DB' }] },
-  { label: 'Fleet', links: [{ to: '/vehicles', label: 'Vehicles', icon: 'VH' }, { to: '/drivers', label: 'Drivers', icon: 'DR' }, {to:'/vehicle-documents',label:'Documents',icon:'DC'}] },
-  { label: 'Operations', links: [{ to: '/trips', label: 'Trips', icon: 'TR' }, { to: '/maintenance', label: 'Maintenance', icon: 'MT' }] },
-  { label: 'Finance', links: [{ to: '/fuel-logs', label: 'Fuel Logs', icon: 'FL' }, { to: '/expenses', label: 'Expenses', icon: 'EX' }] },
-  { label: 'Analytics', links: [{ to: '/reports', label: 'Reports', icon: 'RP' }] },
+  { label: 'Overview', links: [{ to: '/dashboard', label: 'Dashboard', icon: 'dashboard' as const }] },
+  { label: 'Fleet', links: [{ to: '/vehicles', label: 'Vehicles', icon: 'vehicles' as const }, { to: '/drivers', label: 'Drivers', icon: 'drivers' as const }, {to:'/vehicle-documents',label:'Documents',icon:'documents' as const}] },
+  { label: 'Operations', links: [{ to: '/trips', label: 'Trips', icon: 'trips' as const }, { to: '/maintenance', label: 'Maintenance', icon: 'maintenance' as const }] },
+  { label: 'Finance', links: [{ to: '/fuel-logs', label: 'Fuel Logs', icon: 'fuel' as const }, { to: '/expenses', label: 'Expenses', icon: 'expenses' as const }] },
+  { label: 'Analytics', links: [{ to: '/reports', label: 'Reports', icon: 'reports' as const }] },
 ];
 
 export default function ApplicationLayout() {
@@ -33,14 +34,14 @@ export default function ApplicationLayout() {
       <button className="mobile-navigation-toggle" aria-label="Open navigation" onClick={()=>setMobileNavigationOpen(value=>!value)}>{mobileNavigationOpen?'×':'☰'}</button>
       {mobileNavigationOpen&&<button className="mobile-navigation-overlay" aria-label="Close navigation" onClick={()=>setMobileNavigationOpen(false)}/>}
       <nav className={`sidebar-navigation${mobileNavigationOpen?' mobile-open':''}`}>
-        <div className="sidebar-brand"><h1>TransitOps</h1><span>Smart Transport Platform</span></div>
+        <div className="sidebar-brand"><img src="/transitops-logo.png" alt="TransitOps" /><div><h1>TransitOps</h1><span>Fleet Management</span></div></div>
         <div className="sidebar-navigation-links">
           {visibleSections.map((section) => (
             <div key={section.label}>
               <div className="sidebar-section-label">{section.label}</div>
               {section.links.map((link) => (
                 <NavLink key={link.to} to={link.to} onClick={()=>setMobileNavigationOpen(false)} className={({ isActive }) => `sidebar-link${isActive ? ' active' : ''}`}>
-                  <span className="sidebar-link-icon">{link.icon}</span>{link.label}
+                  <span className="sidebar-link-icon"><ApplicationIcon name={link.icon} /></span>{link.label}
                 </NavLink>
               ))}
             </div>
@@ -48,7 +49,7 @@ export default function ApplicationLayout() {
         </div>
         <div className="sidebar-user-info">
           <div><div className="sidebar-user-name">{user?.full_name}</div><div className="sidebar-user-role">{user?.role?.replaceAll('_', ' ')}</div></div>
-          <div className="sidebar-user-actions"><button className="button button-small button-secondary" aria-label="Toggle color theme" onClick={()=>setDarkMode(value=>!value)}>{darkMode?'Light':'Dark'}</button><button className="button button-small button-secondary" onClick={handleLogout}>Logout</button></div>
+          <div className="sidebar-user-actions"><button className="icon-button" aria-label="Toggle color theme" title="Toggle color theme" onClick={()=>setDarkMode(value=>!value)}><ApplicationIcon name={darkMode?'sun':'moon'} /></button><button className="icon-button" aria-label="Logout" title="Logout" onClick={handleLogout}><ApplicationIcon name="logout" /></button></div>
         </div>
       </nav>
       <main className="main-content"><PageTransition><Outlet /></PageTransition></main>
