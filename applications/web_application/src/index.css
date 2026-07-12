@@ -274,16 +274,11 @@ h3 { font-size: var(--font-size-h3); }
   gap: var(--space-3);
 }
 
-.landing-brand-mark {
-  align-items: center;
-  background: var(--accent);
-  border-radius: 999px;
-  color: #ffffff;
-  display: inline-flex;
+.landing-brand-logo {
+  display: block;
   height: 36px;
-  justify-content: center;
-  letter-spacing: 0;
-  width: 36px;
+  width: auto;
+  object-fit: contain;
 }
 
 .landing-nav {

@@ -33,6 +33,20 @@ class DriverFleetManagerAssignmentRequest(BaseModel):
     fleet_manager_id: int = Field(gt=0)
 
 
+class CreateDriverLoginRequest(BaseModel):
+    """Request body for fleet managers to create a login for a driver they own."""
+    email: EmailStr
+    password: str = Field(min_length=8, max_length=128)
+
+
+class DriverLoginResponse(BaseModel):
+    """Response after creating a driver login."""
+    user_id: int
+    email: str
+    driver_id: int
+    full_name: str
+
+
 user_administration_router = APIRouter(prefix="/admin", tags=["user administration"])
 
 
@@ -98,3 +112,55 @@ def assign_driver_to_fleet_manager(
     driver.fleet_manager_id = manager.id
     database_session.commit()
     return {"driver_id": driver.id, "fleet_manager_id": manager.id}
+
+
+@user_administration_router.post("/fleet/drivers/{driver_id}/create-login", response_model=DriverLoginResponse, status_code=201)
+def create_driver_login(
+    driver_id: int,
+    request: CreateDriverLoginRequest,
+    current_user: Annotated[UserAccount, Depends(require_role(UserRole.FLEET_MANAGER))],
+    database_session: Annotated[Session, Depends(get_database_session)],
+) -> DriverLoginResponse:
+    """Allow a fleet manager to create a login account for a driver they own.
+
+    The new account is linked to the driver record via driver_id.
+    Returns 403 if the driver does not belong to this fleet manager.
+    Returns 409 if a login already exists for this driver.
+    """
+    driver = database_session.query(Driver).filter(Driver.id == driver_id).first()
+    if driver is None:
+        raise ResourceNotFoundError("Driver", driver_id)
+    if current_user.role != UserRole.ADMIN and driver.fleet_manager_id != current_user.id:
+        raise HTTPException(
+            status_code=403,
+            detail={"detail": "You can only create logins for drivers assigned to you.", "code": "DRIVER_NOT_OWNED"},
+        )
+    # Check if a login already exists for this driver
+    existing_login = database_session.query(UserAccount).filter(UserAccount.driver_id == driver_id).first()
+    if existing_login is not None:
+        raise HTTPException(
+            status_code=409,
+            detail={"detail": "A login account already exists for this driver.", "code": "DRIVER_LOGIN_EXISTS"},
+        )
+    if database_session.query(UserAccount.id).filter(UserAccount.email == str(request.email)).first():
+        raise HTTPException(
+            status_code=409,
+            detail={"detail": "A user with this email already exists.", "code": "DUPLICATE_USER_EMAIL"},
+        )
+    new_account = UserAccount(
+        email=str(request.email),
+        full_name=driver.name,
+        hashed_password=hash_password(request.password),
+        role=UserRole.DRIVER,
+        driver_id=driver_id,
+        is_active=True,
+    )
+    database_session.add(new_account)
+    database_session.commit()
+    database_session.refresh(new_account)
+    return DriverLoginResponse(
+        user_id=new_account.id,
+        email=new_account.email,
+        driver_id=driver_id,
+        full_name=driver.name,
+    )

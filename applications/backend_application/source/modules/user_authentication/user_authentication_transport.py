@@ -1,8 +1,9 @@
 """HTTP transport layer for user authentication.
 
 Routes:
-    POST /user-authentication/login — Authenticate with email and password
-    GET  /user-authentication/current-user — Get currently authenticated user info
+    POST  /user-authentication/login           — Authenticate with email and password
+    GET   /user-authentication/current-user    — Get currently authenticated user info
+    PATCH /user-authentication/change-password — Change the current user's password
 """
 
 from typing import Annotated
@@ -20,8 +21,11 @@ from source.shared_infrastructure.transit_ops_email_notifications import (
 from source.modules.user_authentication.authenticate_user_credentials import (
     authenticate_user_credentials,
     create_access_token,
+    hash_password,
+    verify_password,
 )
 from source.modules.user_authentication.user_authentication_contracts import (
+    ChangePasswordRequest,
     CurrentUserResult,
     UserLoginRequest,
     UserLoginResult,
@@ -78,3 +82,28 @@ def get_current_user_info(
         driver_id=getattr(current_user, "driver_id", None),
         created_at=current_user.created_at,
     )
+
+
+@user_authentication_router.patch("/change-password")
+def change_password(
+    request: ChangePasswordRequest,
+    current_user: Annotated[UserAccount, Depends(get_current_authenticated_user)],
+    database_session: Annotated[Session, Depends(get_database_session)],
+) -> dict[str, str]:
+    """Allow any authenticated user to change their own password.
+
+    Verifies the current password before applying the new hash.
+    """
+    if not verify_password(request.current_password, current_user.hashed_password):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={"detail": "Current password is incorrect.", "code": "WRONG_CURRENT_PASSWORD"},
+        )
+    if len(request.new_password) < 8:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail={"detail": "New password must be at least 8 characters.", "code": "PASSWORD_TOO_SHORT"},
+        )
+    current_user.hashed_password = hash_password(request.new_password)
+    database_session.commit()
+    return {"detail": "Password updated successfully."}

@@ -49,7 +49,7 @@ export default function ApplicationLayout() {
           ))}
         </div>
         <div className="sidebar-user-info">
-          <div><div className="sidebar-user-name">{user?.full_name}</div><div className="sidebar-user-role">{user?.role?.replaceAll('_', ' ')}</div></div>
+          <div onClick={()=>navigate('/profile')} style={{cursor:'pointer'}}><div className="sidebar-user-name">{user?.full_name}</div><div className="sidebar-user-role">{user?.role?.replaceAll('_', ' ')}</div></div>
           <div className="sidebar-user-actions"><button className="icon-button" aria-label="Toggle color theme" title="Toggle color theme" onClick={()=>setDarkMode(value=>!value)}><ApplicationIcon name={darkMode?'sun':'moon'} /></button><button className="icon-button" aria-label="Logout" title="Logout" onClick={handleLogout}><ApplicationIcon name="logout" /></button></div>
         </div>
       </nav>

@@ -78,7 +78,7 @@ export default function LandingPage() {
     <main className="landing-page">
       <header className="landing-header">
         <Link to="/" className="landing-brand" aria-label="TransitOps home">
-          <span className="landing-brand-mark">TO</span>
+          <img src="/transitops-logo.png" alt="TransitOps" className="landing-brand-logo" />
           <span>TransitOps</span>
         </Link>
         <nav className="landing-nav" aria-label="Landing page sections">

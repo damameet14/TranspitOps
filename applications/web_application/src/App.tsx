@@ -14,6 +14,7 @@ import ExpensesPage from './pages/expenses_page';
 import ReportsPage from './pages/reports_page';
 import VehicleDocumentsPage from './pages/vehicle_documents_page';
 import AdminPage from './pages/admin_page';
+import ProfilePage from './pages/profile_page';
 import CursorFollower from './components/motion/CursorFollower';
 import MotionDebugPanel from './components/motion/MotionDebugPanel';
 import { useEffect } from 'react';
@@ -53,6 +54,7 @@ function App() {
             <Route path="expenses" element={<RoleProtectedRoute route="/expenses"><ExpensesPage /></RoleProtectedRoute>} />
             <Route path="reports" element={<RoleProtectedRoute route="/reports"><ReportsPage /></RoleProtectedRoute>} />
             <Route path="admin" element={<RoleProtectedRoute route="/admin"><AdminPage /></RoleProtectedRoute>} />
+            <Route path="profile" element={<ProfilePage />} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

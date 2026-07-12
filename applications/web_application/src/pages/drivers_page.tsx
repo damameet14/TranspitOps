@@ -22,6 +22,8 @@ export default function DriversPage() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [search,setSearch]=useState('');
   const [form, setForm] = useState({ name: '', email: '', license_number: '', license_category: 'LMV-TR', license_expiry_date: '', contact_number: '', safety_score: '100', status:'available' });
+  const [loginTarget, setLoginTarget] = useState<Driver | null>(null);
+  const [loginForm, setLoginForm] = useState({ email: '', password: '' });
   const canWrite = user?.role === 'fleet_manager' || user?.role === 'safety_officer';
 
   const fetchDrivers = () => { apiClient.get('/drivers').then(r => setDrivers(r.data)).catch(error => setFeedbackMessage(getApiErrorMessage(error, 'Drivers could not be loaded.'))).finally(() => setLoading(false)); };
@@ -66,6 +68,16 @@ export default function DriversPage() {
     } finally { setIsDeleting(false); }
   };
   const sendLicenseReminders=async()=>{try{const response=await apiClient.post('/drivers/license-reminders?days=30');setFeedbackMessage(`License reminders processed: ${response.data.sent} sent, ${response.data.failed} failed.`);}catch(error){setFeedbackMessage(getApiErrorMessage(error,'License reminders could not be sent.'));}};
+  const handleCreateLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!loginTarget) return;
+    try {
+      await apiClient.post(`/admin/fleet/drivers/${loginTarget.id}/create-login`, loginForm);
+      setFeedbackMessage(`Login created for ${loginTarget.name}`);
+      setLoginTarget(null);
+      setLoginForm({ email: '', password: '' });
+    } catch (error) { setFeedbackMessage(getApiErrorMessage(error, 'Driver login could not be created.')); }
+  };
 
   if (loading) return <div className="page-content"><p className="text-muted">Loading...</p></div>;
 
@@ -120,7 +132,7 @@ export default function DriversPage() {
                     <td>{d.contact_number}</td>
                     <td><span style={{fontWeight:500,color:d.safety_score >= 80 ? 'var(--state-available-text)' : d.safety_score >= 50 ? 'var(--state-in-shop-text)' : 'var(--state-suspended-text)'}}>{d.safety_score}</span></td>
                     <td><span className={`status-badge status-badge-${d.status}`}>{d.status.replace('_',' ')}</span></td>
-                    {canWrite && <td><div className="table-actions"><button className="button button-small button-secondary" onClick={()=>openEditForm(d)}>Edit</button><button className="button button-small button-danger" onClick={()=>setDriverPendingDeletion(d)}>Delete</button></div></td>}
+                    {canWrite && <td><div className="table-actions"><button className="button button-small button-secondary" onClick={()=>openEditForm(d)}>Edit</button>{user?.role === 'fleet_manager' && <button className="button button-small button-secondary" onClick={()=>{setLoginTarget(d);setLoginForm({email:d.email,password:''});}}>Create Login</button>}<button className="button button-small button-danger" onClick={()=>setDriverPendingDeletion(d)}>Delete</button></div></td>}
                   </tr>
                 ))}
                 {filteredDrivers.length === 0 && <tr><td colSpan={9} className="data-table-empty">No drivers found</td></tr>}
@@ -130,6 +142,7 @@ export default function DriversPage() {
         </div>
       </div>
       {driverPendingDeletion && <ConfirmationDialog title="Delete driver?" message={`Delete ${driverPendingDeletion.name}? Drivers with trip history must be retained and cannot be deleted.`} confirmLabel="Delete driver" isProcessing={isDeleting} onConfirm={handleDelete} onCancel={() => setDriverPendingDeletion(null)} />}
+      {loginTarget && <div className="modal-overlay"><div className="modal-container"><div className="modal-header"><h3 className="modal-title">Create Login for {loginTarget.name}</h3></div><form onSubmit={handleCreateLogin}><div className="modal-body"><div className="form-group"><label className="form-label">Email</label><input className="form-input" type="email" value={loginForm.email} onChange={e=>setLoginForm({...loginForm,email:e.target.value})} required/></div><div className="form-group"><label className="form-label">Temporary Password</label><input className="form-input" type="password" minLength={8} value={loginForm.password} onChange={e=>setLoginForm({...loginForm,password:e.target.value})} required/></div></div><div className="modal-footer"><button type="button" className="button button-secondary" onClick={()=>setLoginTarget(null)}>Cancel</button><button className="button button-primary">Create Login</button></div></form></div></div>}
     </>
   );
 }

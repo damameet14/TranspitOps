@@ -13,7 +13,7 @@ interface DriverRecommendation extends DriverOption { recommendation_score:numbe
 
 const today = () => new Date().toISOString().slice(0, 10);
 const yesterday = () => new Date(Date.now() - 86400000).toISOString().slice(0, 10);
-const createEmptyForm = (isPastTrip = false) => ({ source_street_address:'', source_location_id:'', destination_street_address:'', destination_location_id:'', trip_date:isPastTrip?'':today(), vehicle_id:'', driver_id:'', cargo_weight_kg:'', planned_distance_km:'', revenue:'', is_past_trip:isPastTrip, final_odometer_km:'', fuel_consumed_liters:'', fuel_cost:'', actual_distance_km:'' });
+const createEmptyForm = (isPastTrip = false) => ({ source_street_address:'', source_location_id:'', source_state:'', destination_street_address:'', destination_location_id:'', destination_state:'', trip_date:isPastTrip?'':today(), vehicle_id:'', driver_id:'', cargo_weight_kg:'', planned_distance_km:'', revenue:'', is_past_trip:isPastTrip, final_odometer_km:'', fuel_consumed_liters:'', fuel_cost:'', actual_distance_km:'' });
 
 export default function TripsPage() {
   const { user } = useAuth();
@@ -73,5 +73,20 @@ export default function TripsPage() {
 }
 
 type TripForm=ReturnType<typeof createEmptyForm>;
-function AddressFields({prefix,form,setForm,locations}:{prefix:'source'|'destination';form:TripForm;setForm:React.Dispatch<React.SetStateAction<TripForm>>;locations:ServiceLocation[]}){const streetKey=`${prefix}_street_address` as const;const locationKey=`${prefix}_location_id` as const;return <fieldset className="card"><legend className="form-label">{prefix==='source'?'Source':'Destination'}</legend><div className="form-group"><input className="form-input" placeholder="Street address" value={form[streetKey]} onChange={event=>setForm({...form,[streetKey]:event.target.value})} required/></div><select className="form-select" value={form[locationKey]} onChange={event=>setForm({...form,[locationKey]:event.target.value})} required><option value="">City and state…</option>{locations.map(location=><option key={location.id} value={location.id}>{location.city}, {location.state}</option>)}</select></fieldset>}
+function AddressFields({prefix,form,setForm,locations}:{prefix:'source'|'destination';form:TripForm;setForm:React.Dispatch<React.SetStateAction<TripForm>>;locations:ServiceLocation[]}){
+  const streetKey=`${prefix}_street_address` as const;
+  const locationKey=`${prefix}_location_id` as const;
+  const stateKey=`${prefix}_state` as 'source_state'|'destination_state';
+  const selectedState=(form as Record<string,string>)[stateKey]||'';
+  const uniqueStates=[...new Set(locations.map(l=>l.state))].sort();
+  const filteredCities=selectedState?locations.filter(l=>l.state===selectedState):[];
+  const handleStateChange=(value:string)=>{setForm(prev=>({...prev,[stateKey]:value,[locationKey]:''}));};
+  const handleCityChange=(value:string)=>{setForm(prev=>({...prev,[locationKey]:value}));};
+  return <fieldset className="card"><legend className="form-label">{prefix==='source'?'Source':'Destination'}</legend>
+    <div className="form-group"><input className="form-input" placeholder="Street address" value={form[streetKey]} onChange={event=>setForm({...form,[streetKey]:event.target.value})} required/></div>
+    <div className="form-row">
+      <div className="form-group"><label className="form-label">State</label><select className="form-select" value={selectedState} onChange={e=>handleStateChange(e.target.value)} required><option value="">Select state…</option>{uniqueStates.map(s=><option key={s} value={s}>{s}</option>)}</select></div>
+      <div className="form-group"><label className="form-label">City</label><select className="form-select" value={form[locationKey]} onChange={e=>handleCityChange(e.target.value)} required disabled={!selectedState}><option value="">Select city…</option>{filteredCities.map(l=><option key={l.id} value={l.id}>{l.city}</option>)}</select></div>
+    </div>
+  </fieldset>}
 function NumberField({label,name,form,setForm}:{label:string;name:keyof TripForm;form:TripForm;setForm:React.Dispatch<React.SetStateAction<TripForm>>}){return <div className="form-group"><label className="form-label">{label}</label><input className="form-input" type="number" step="0.1" value={String(form[name])} onChange={event=>setForm({...form,[name]:event.target.value})} required/></div>}

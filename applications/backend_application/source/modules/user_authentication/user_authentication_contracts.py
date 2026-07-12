@@ -30,3 +30,9 @@ class CurrentUserResult(BaseModel):
     role: str
     driver_id: int | None = None
     created_at: datetime
+
+
+class ChangePasswordRequest(BaseModel):
+    """Request body for PATCH /user-authentication/change-password."""
+    current_password: str
+    new_password: str
