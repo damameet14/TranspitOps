@@ -25,6 +25,9 @@ class DashboardKpiResult(BaseModel):
     total_drivers: int
     total_trips: int
     active_trips: int  # Draft + Dispatched
+    pending_trips: int
+    active_vehicles: int
+    drivers_on_duty: int
     completed_trips: int
     cancelled_trips: int
     total_revenue: float

@@ -61,6 +61,7 @@ def login(
         user_id=authenticated_user.id,
         full_name=authenticated_user.full_name,
         role=authenticated_user.role.value,
+        driver_id=getattr(authenticated_user, "driver_id", None),
     )
 
 
@@ -74,5 +75,6 @@ def get_current_user_info(
         email=current_user.email,
         full_name=current_user.full_name,
         role=current_user.role.value,
+        driver_id=getattr(current_user, "driver_id", None),
         created_at=current_user.created_at,
     )

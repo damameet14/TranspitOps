@@ -4,7 +4,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from source.shared_infrastructure.database_models.driver_model import Driver, DriverStatus
-from source.shared_infrastructure.standard_error_responses import ResourceNotFoundError
+from source.shared_infrastructure.standard_error_responses import ManagedStatusTransitionError, ResourceNotFoundError
 from source.modules.driver_management.create_driver import (
     DuplicateDriverEmailError,
     DuplicateLicenseNumberError,
@@ -45,6 +45,8 @@ def update_driver(
     if update_request.safety_score is not None:
         driver.safety_score = update_request.safety_score
     if update_request.status is not None:
+        if update_request.status == DriverStatus.ON_TRIP or driver.status == DriverStatus.ON_TRIP:
+            raise ManagedStatusTransitionError("Driver", update_request.status.value)
         driver.status = DriverStatus(update_request.status)
 
     try:

@@ -31,11 +31,14 @@ services:
       BREVO_SENDER_EMAIL: ${BREVO_SENDER_EMAIL:-}
       BREVO_SENDER_NAME: ${BREVO_SENDER_NAME:-TransitOps}
       FRONTEND_URL: ${FRONTEND_URL:-http://localhost:5173}
+      DEFAULT_FUEL_PRICE_PER_LITER: ${DEFAULT_FUEL_PRICE_PER_LITER:-100}
+      VEHICLE_DOCUMENT_STORAGE_PATH: /application_data/vehicle_documents
     depends_on:
       postgres:
         condition: service_healthy
     volumes:
       - ./applications/backend_application:/application
+      - vehicle_documents:/application_data/vehicle_documents
     command: uvicorn source.application_startup.create_application:application --host 0.0.0.0 --port 8000 --reload
 
   frontend:
@@ -56,3 +59,4 @@ services:
 volumes:
   postgres_data:
   frontend_node_modules:
+  vehicle_documents:

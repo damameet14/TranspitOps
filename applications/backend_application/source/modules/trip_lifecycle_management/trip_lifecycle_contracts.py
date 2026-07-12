@@ -26,6 +26,7 @@ class CompleteTripRequest(BaseModel):
     """Request body for POST /trips/{trip_id}/complete — requires odometer and fuel."""
     final_odometer_km: float = Field(..., gt=0)
     fuel_consumed_liters: float = Field(..., gt=0)
+    fuel_cost: Optional[float] = Field(None, gt=0)
     actual_distance_km: Optional[float] = Field(None, gt=0)
 
 

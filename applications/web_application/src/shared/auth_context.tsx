@@ -7,6 +7,7 @@ export interface User {
   email: string;
   full_name: string;
   role: UserRole;
+  driver_id: number | null;
 }
 
 export interface DemoRegistrationRequest {
@@ -43,6 +44,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       email: email,
       full_name: data.full_name,
       role: data.role as UserRole,
+      driver_id: data.driver_id ?? null,
     };
     localStorage.setItem('access_token', data.access_token);
     localStorage.setItem('user', JSON.stringify(newUser));
@@ -56,7 +58,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       password: request.demoPassword,
     });
     const data = response.data;
-    const registeredUser: User = { id: data.user_id, email: request.email, full_name: request.fullName, role: request.role };
+    const registeredUser: User = { id: data.user_id, email: request.email, full_name: request.fullName, role: request.role, driver_id: data.driver_id ?? null };
     localStorage.setItem('access_token', data.access_token);
     localStorage.setItem('user', JSON.stringify(registeredUser));
     localStorage.setItem('demo_registration', 'true');
@@ -79,6 +81,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 }
 
+// oxlint-disable-next-line react/only-export-components
 export function useAuth() {
   const context = useContext(AuthContext);
   if (!context) throw new Error('useAuth must be used within AuthProvider');

@@ -11,9 +11,12 @@ from source.shared_infrastructure.standard_error_responses import ResourceNotFou
 def retrieve_all_trips(
     database_session: Session,
     status_filter: Optional[str] = None,
+    driver_id_filter: Optional[int] = None,
 ) -> list[Trip]:
     """Return all trips, optionally filtered by status."""
     query = database_session.query(Trip)
+    if driver_id_filter is not None:
+        query = query.filter(Trip.driver_id == driver_id_filter)
     if status_filter is not None:
         try:
             trip_status = TripStatus(status_filter)

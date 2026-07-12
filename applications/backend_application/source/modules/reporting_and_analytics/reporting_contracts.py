@@ -94,3 +94,23 @@ class MaintenanceCostReport(BaseModel):
     rows: list[MaintenanceCostRow]
     grand_total_cost: float
     total_records: int
+
+
+class VehicleProfitabilityRow(BaseModel):
+    vehicle_id: int
+    vehicle_registration_number: str
+    vehicle_name_model: str
+    revenue: float
+    fuel_cost: float
+    maintenance_cost: float
+    other_expenses: float
+    total_operational_cost: float
+    net_profit: float
+    roi_percent: float
+
+
+class VehicleProfitabilityReport(BaseModel):
+    rows: list[VehicleProfitabilityRow]
+    total_revenue: float
+    total_operational_cost: float
+    total_net_profit: float

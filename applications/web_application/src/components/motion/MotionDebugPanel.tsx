@@ -10,7 +10,7 @@ export default function MotionDebugPanel() {
     if (!import.meta.env.DEV) return;
   }, []);
 
-  if (!import.meta.env.DEV) return null;
+  if (!import.meta.env.DEV || import.meta.env.VITE_SHOW_MOTION_DEBUG !== 'true') return null;
 
   const handleMotionChange = (level: MotionLevel) => {
     setMotionLevel(level);

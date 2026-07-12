@@ -19,6 +19,7 @@ class UserLoginResult(BaseModel):
     user_id: int
     full_name: str
     role: str
+    driver_id: int | None = None
 
 
 class CurrentUserResult(BaseModel):
@@ -27,4 +28,5 @@ class CurrentUserResult(BaseModel):
     email: str
     full_name: str
     role: str
+    driver_id: int | None = None
     created_at: datetime

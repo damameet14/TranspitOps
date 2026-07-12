@@ -30,7 +30,10 @@ def dispatch_trip(
 
     Raises InvalidTripStateTransitionError if trip is not in Draft status.
     """
-    trip = database_session.query(Trip).filter(Trip.id == trip_id).first()
+    trip_query = database_session.query(Trip).filter(Trip.id == trip_id)
+    if getattr(getattr(database_session, "bind", None), "dialect", None) is not None and database_session.bind.dialect.name == "postgresql":
+        trip_query = trip_query.with_for_update(of=Trip)
+    trip = trip_query.first()
     if trip is None:
         raise ResourceNotFoundError("Trip", trip_id)
 

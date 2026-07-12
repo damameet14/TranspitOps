@@ -25,10 +25,11 @@ export default function TripsPage() {
   const [tripPendingCancellation, setTripPendingCancellation] = useState<Trip | null>(null);
   const [feedbackMessage, setFeedbackMessage] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
+  const [processingTripId, setProcessingTripId] = useState<number | null>(null);
   const [vehicles, setVehicles] = useState<VehicleOption[]>([]);
   const [drivers, setDrivers] = useState<DriverOption[]>([]);
   const [routeSuggestion, setRouteSuggestion] = useState<RouteSuggestion | null>(null);
-  const [completeTrip, setCompleteTrip] = useState<{id: number; form: {final_odometer_km: string; fuel_consumed_liters: string; actual_distance_km: string}} | null>(null);
+  const [completeTrip, setCompleteTrip] = useState<{id: number; form: {final_odometer_km: string; fuel_consumed_liters: string; fuel_cost: string; actual_distance_km: string}} | null>(null);
   const [form, setForm] = useState({ source: '', destination: '', vehicle_id: '', driver_id: '', cargo_weight_kg: '', planned_distance_km: '', revenue: '' });
   const canWrite = user?.role === 'fleet_manager' || user?.role === 'driver';
 
@@ -38,7 +39,12 @@ export default function TripsPage() {
   const openForm = async () => {
     try {
       const [v, d] = await Promise.all([apiClient.get('/vehicles/available'), apiClient.get('/drivers/available')]);
-      setVehicles(v.data); setDrivers(d.data); setShowForm(true);
+      const driverOptions: DriverOption[] = user?.role === 'driver'
+        ? d.data.filter((driver: DriverOption) => driver.id === user.driver_id)
+        : d.data;
+      setVehicles(v.data); setDrivers(driverOptions);
+      setForm(current => ({ ...current, driver_id: user?.role === 'driver' && user.driver_id ? String(user.driver_id) : current.driver_id }));
+      setShowForm(true);
     } catch (error) { setFeedbackMessage(getApiErrorMessage(error, 'Available resources could not be loaded.')); }
   };
 
@@ -61,7 +67,13 @@ export default function TripsPage() {
     } catch (error) { setFeedbackMessage(getApiErrorMessage(error, 'Trip could not be created.')); }
   };
 
-  const handleDispatch = async (id: number) => { try { await apiClient.post(`/trips/${id}/dispatch`); fetchTrips(); } catch (error) { setFeedbackMessage(getApiErrorMessage(error, 'Trip could not be dispatched.')); } };
+  const handleDispatch = async (id: number) => {
+    if (processingTripId !== null) return;
+    setProcessingTripId(id);
+    try { await apiClient.post(`/trips/${id}/dispatch`); fetchTrips(); }
+    catch (error) { setFeedbackMessage(getApiErrorMessage(error, 'Trip could not be dispatched.')); }
+    finally { setProcessingTripId(null); }
+  };
   const handleCancel = async () => {
     if (!tripPendingCancellation) return;
     setIsProcessing(true);
@@ -72,11 +84,13 @@ export default function TripsPage() {
 
   const handleComplete = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!completeTrip) return;
+    if (!completeTrip || processingTripId !== null) return;
+    setProcessingTripId(completeTrip.id);
     try {
-      await apiClient.post(`/trips/${completeTrip.id}/complete`, { final_odometer_km: +completeTrip.form.final_odometer_km, fuel_consumed_liters: +completeTrip.form.fuel_consumed_liters, actual_distance_km: +completeTrip.form.actual_distance_km });
+      await apiClient.post(`/trips/${completeTrip.id}/complete`, { final_odometer_km: +completeTrip.form.final_odometer_km, fuel_consumed_liters: +completeTrip.form.fuel_consumed_liters, fuel_cost: +completeTrip.form.fuel_cost, actual_distance_km: +completeTrip.form.actual_distance_km });
       setCompleteTrip(null); fetchTrips();
     } catch (error) { setFeedbackMessage(getApiErrorMessage(error, 'Trip could not be completed.')); }
+    finally { setProcessingTripId(null); }
   };
 
   if (loading) return <div className="page-content"><p className="text-muted">Loading...</p></div>;
@@ -115,7 +129,7 @@ export default function TripsPage() {
                   </select>
                 </div>
                 <div className="form-group"><label className="form-label">Driver</label>
-                  <select className="form-select" value={form.driver_id} onChange={e => setForm({...form, driver_id: e.target.value})} required>
+                  <select className="form-select" value={form.driver_id} onChange={e => setForm({...form, driver_id: e.target.value})} required disabled={user?.role === 'driver'}>
                     <option value="">Select driver...</option>
                     {drivers.map(d => <option key={d.id} value={d.id}>{d.name} ({d.license_number})</option>)}
                   </select>
@@ -144,11 +158,12 @@ export default function TripsPage() {
                 <div className="modal-body">
                   <div className="form-group"><label className="form-label">Final Odometer (km)</label><input className="form-input" type="number" value={completeTrip.form.final_odometer_km} onChange={e=>setCompleteTrip({...completeTrip,form:{...completeTrip.form,final_odometer_km:e.target.value}})} required /></div>
                   <div className="form-group"><label className="form-label">Fuel Consumed (liters)</label><input className="form-input" type="number" step="0.1" value={completeTrip.form.fuel_consumed_liters} onChange={e=>setCompleteTrip({...completeTrip,form:{...completeTrip.form,fuel_consumed_liters:e.target.value}})} required /></div>
+                  <div className="form-group"><label className="form-label">Fuel Cost (₹)</label><input className="form-input" type="number" min="0.01" step="0.01" value={completeTrip.form.fuel_cost} onChange={e=>setCompleteTrip({...completeTrip,form:{...completeTrip.form,fuel_cost:e.target.value}})} required /></div>
                   <div className="form-group"><label className="form-label">Actual Distance (km)</label><input className="form-input" type="number" value={completeTrip.form.actual_distance_km} onChange={e=>setCompleteTrip({...completeTrip,form:{...completeTrip.form,actual_distance_km:e.target.value}})} required /></div>
                 </div>
                 <div className="modal-footer">
                   <button type="button" className="button button-secondary" onClick={()=>setCompleteTrip(null)}>Cancel</button>
-                  <button type="submit" className="button button-primary">Complete Trip</button>
+                  <button type="submit" className="button button-primary" disabled={processingTripId === completeTrip.id}>{processingTripId === completeTrip.id ? 'Completing…' : 'Complete Trip'}</button>
                 </div>
               </form>
             </div>
@@ -170,8 +185,8 @@ export default function TripsPage() {
                     <td>₹{t.revenue.toLocaleString()}</td>
                     <td><span className={`status-badge status-badge-${t.status}`}>{t.status}</span></td>
                     {canWrite && <td className="data-table-actions">
-                      {t.status === 'draft' && <button className="button button-small button-primary" onClick={()=>handleDispatch(t.id)}>Dispatch</button>}
-                      {t.status === 'dispatched' && <button className="button button-small button-primary" onClick={()=>setCompleteTrip({id:t.id,form:{final_odometer_km:'',fuel_consumed_liters:'',actual_distance_km:''}})}>Complete</button>}
+                      {t.status === 'draft' && <button className="button button-small button-primary" disabled={processingTripId !== null} onClick={()=>handleDispatch(t.id)}>Dispatch</button>}
+                      {t.status === 'dispatched' && <button className="button button-small button-primary" disabled={processingTripId !== null} onClick={()=>setCompleteTrip({id:t.id,form:{final_odometer_km:'',fuel_consumed_liters:'',fuel_cost:'',actual_distance_km:''}})}>Complete</button>}
                       {(t.status === 'draft' || t.status === 'dispatched') && <button className="button button-small button-danger" onClick={()=>setTripPendingCancellation(t)}>Cancel</button>}
                     </td>}
                   </tr>

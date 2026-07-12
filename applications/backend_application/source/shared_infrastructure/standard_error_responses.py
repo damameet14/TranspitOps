@@ -129,3 +129,30 @@ class InsufficientPermissionsError(TransitOpsError):
             detail="You do not have permission to perform this action.",
             error_code="INSUFFICIENT_PERMISSIONS",
         )
+
+
+class DriverAccountNotLinkedError(TransitOpsError):
+    def __init__(self):
+        super().__init__(
+            status_code=403,
+            detail="This driver login is not linked to a driver record. Contact a fleet manager.",
+            error_code="DRIVER_ACCOUNT_NOT_LINKED",
+        )
+
+
+class DriverTripOwnershipError(TransitOpsError):
+    def __init__(self, trip_driver_id: int):
+        super().__init__(
+            status_code=403,
+            detail=f"Drivers can only manage trips assigned to their own driver record, not driver {trip_driver_id}.",
+            error_code="DRIVER_TRIP_OWNERSHIP_REQUIRED",
+        )
+
+
+class ManagedStatusTransitionError(TransitOpsError):
+    def __init__(self, resource_type: str, status: str):
+        super().__init__(
+            status_code=409,
+            detail=f"{resource_type} status '{status}' is controlled by trip or maintenance workflows and cannot be set manually.",
+            error_code="STATUS_CONTROLLED_BY_WORKFLOW",
+        )
