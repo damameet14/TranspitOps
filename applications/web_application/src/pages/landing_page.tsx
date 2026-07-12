@@ -171,7 +171,7 @@ export default function LandingPage() {
         <div
           style={{
             background: '#141414',
-            border: '2px solid #FF4630',
+            border: '2px solid var(--accent)',
             borderRadius: 'var(--radius-card)',
             padding: 'var(--space-8) var(--space-8) var(--space-4) var(--space-8)',
             display: 'flex',
@@ -188,8 +188,8 @@ export default function LandingPage() {
             {/* Logo */}
             <div>
               <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 8L6 16L12 24" stroke="#FF4630" strokeWidth="3" strokeLinecap="square" />
-                <path d="M20 8L26 16L20 24" stroke="#FF4630" strokeWidth="3" strokeLinecap="square" />
+                <path d="M12 8L6 16L12 24" stroke="var(--accent)" strokeWidth="3" strokeLinecap="square" />
+                <path d="M20 8L26 16L20 24" stroke="var(--accent)" strokeWidth="3" strokeLinecap="square" />
               </svg>
             </div>
 
@@ -197,28 +197,28 @@ export default function LandingPage() {
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '64px' }}>
               {/* Platform */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
-                <h4 style={{ color: '#FF4630', fontSize: 'var(--font-size-body)', fontWeight: 600, letterSpacing: '0.05em', margin: '0 0 var(--space-2) 0', fontFamily: 'var(--font-family)' }}>PLATFORM</h4>
-                <Link to="/login" style={{ color: '#FF4630', textDecoration: 'none', fontSize: 'var(--font-size-small)', fontFamily: 'monospace' }}>↳ LAUNCH LEDGER</Link>
-                <Link to="/login" style={{ color: '#FF4630', textDecoration: 'none', fontSize: 'var(--font-size-small)', fontFamily: 'monospace' }}>↳ TELEMETRY STREAM</Link>
-                <Link to="/login" style={{ color: '#FF4630', textDecoration: 'none', fontSize: 'var(--font-size-small)', fontFamily: 'monospace' }}>↳ CONTROL BOARD</Link>
+                <h4 style={{ color: 'var(--accent)', fontSize: 'var(--font-size-body)', fontWeight: 600, letterSpacing: '0.05em', margin: '0 0 var(--space-2) 0', fontFamily: 'var(--font-family)' }}>PLATFORM</h4>
+                <Link to="/login" style={{ color: 'var(--accent)', textDecoration: 'none', fontSize: 'var(--font-size-small)', fontFamily: 'monospace' }}>↳ LAUNCH LEDGER</Link>
+                <Link to="/login" style={{ color: 'var(--accent)', textDecoration: 'none', fontSize: 'var(--font-size-small)', fontFamily: 'monospace' }}>↳ TELEMETRY STREAM</Link>
+                <Link to="/login" style={{ color: 'var(--accent)', textDecoration: 'none', fontSize: 'var(--font-size-small)', fontFamily: 'monospace' }}>↳ CONTROL BOARD</Link>
               </div>
 
               {/* Solutions */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
-                <h4 style={{ color: '#FF4630', fontSize: 'var(--font-size-body)', fontWeight: 600, letterSpacing: '0.05em', margin: '0 0 var(--space-2) 0', fontFamily: 'var(--font-family)' }}>SOLUTIONS⁴</h4>
-                <span style={{ color: '#FF4630', fontSize: 'var(--font-size-small)', fontFamily: 'monospace' }}>↳ ROUTING ENGINE</span>
-                <span style={{ color: '#FF4630', fontSize: 'var(--font-size-small)', fontFamily: 'monospace' }}>↳ ASSET TELEMETRY</span>
-                <span style={{ color: '#FF4630', fontSize: 'var(--font-size-small)', fontFamily: 'monospace' }}>↳ LEDGER AUDIT</span>
-                <span style={{ color: '#FF4630', fontSize: 'var(--font-size-small)', fontFamily: 'monospace' }}>↳ DISPATCH AUTO</span>
+                <h4 style={{ color: 'var(--accent)', fontSize: 'var(--font-size-body)', fontWeight: 600, letterSpacing: '0.05em', margin: '0 0 var(--space-2) 0', fontFamily: 'var(--font-family)' }}>SOLUTIONS⁴</h4>
+                <span style={{ color: 'var(--accent)', fontSize: 'var(--font-size-small)', fontFamily: 'monospace' }}>↳ ROUTING ENGINE</span>
+                <span style={{ color: 'var(--accent)', fontSize: 'var(--font-size-small)', fontFamily: 'monospace' }}>↳ ASSET TELEMETRY</span>
+                <span style={{ color: 'var(--accent)', fontSize: 'var(--font-size-small)', fontFamily: 'monospace' }}>↳ LEDGER AUDIT</span>
+                <span style={{ color: 'var(--accent)', fontSize: 'var(--font-size-small)', fontFamily: 'monospace' }}>↳ DISPATCH AUTO</span>
               </div>
 
               {/* About */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
-                <h4 style={{ color: '#FF4630', fontSize: 'var(--font-size-body)', fontWeight: 600, letterSpacing: '0.05em', margin: '0 0 var(--space-2) 0', fontFamily: 'var(--font-family)' }}>ABOUT²</h4>
-                <Link to="/login" style={{ color: '#FF4630', textDecoration: 'none', fontSize: 'var(--font-size-small)', fontFamily: 'monospace' }}>↳ COMPANY</Link>
-                <Link to="/login" style={{ color: '#FF4630', textDecoration: 'none', fontSize: 'var(--font-size-small)', fontFamily: 'monospace' }}>↳ CAREERS</Link>
-                <Link to="/login" style={{ color: '#FF4630', textDecoration: 'none', fontSize: 'var(--font-size-small)', fontFamily: 'monospace' }}>INSIGHTS</Link>
-                <Link to="/login" style={{ color: '#FF4630', textDecoration: 'none', fontSize: 'var(--font-size-small)', fontFamily: 'monospace' }}>CONTACT</Link>
+                <h4 style={{ color: 'var(--accent)', fontSize: 'var(--font-size-body)', fontWeight: 600, letterSpacing: '0.05em', margin: '0 0 var(--space-2) 0', fontFamily: 'var(--font-family)' }}>ABOUT²</h4>
+                <Link to="/login" style={{ color: 'var(--accent)', textDecoration: 'none', fontSize: 'var(--font-size-small)', fontFamily: 'monospace' }}>↳ COMPANY</Link>
+                <Link to="/login" style={{ color: 'var(--accent)', textDecoration: 'none', fontSize: 'var(--font-size-small)', fontFamily: 'monospace' }}>↳ CAREERS</Link>
+                <Link to="/login" style={{ color: 'var(--accent)', textDecoration: 'none', fontSize: 'var(--font-size-small)', fontFamily: 'monospace' }}>INSIGHTS</Link>
+                <Link to="/login" style={{ color: 'var(--accent)', textDecoration: 'none', fontSize: 'var(--font-size-small)', fontFamily: 'monospace' }}>CONTACT</Link>
               </div>
             </div>
           </div>
@@ -228,17 +228,17 @@ export default function LandingPage() {
             <div style={{ flex: 1, minWidth: '120px' }}></div>
             <div style={{ flex: 1, minWidth: '180px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 'var(--space-2)' }}>
               <svg width="28" height="18" viewBox="0 0 28 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <rect width="28" height="6" fill="#FF4630" />
-                <rect y="6" width="28" height="6" fill="none" stroke="#FF4630" strokeWidth="1" />
-                <circle cx="14" cy="9" r="1.8" fill="none" stroke="#FF4630" strokeWidth="1" />
-                <rect y="12" width="28" height="6" fill="#FF4630" />
+                <rect width="28" height="6" fill="var(--accent)" />
+                <rect y="6" width="28" height="6" fill="none" stroke="var(--accent)" strokeWidth="1" />
+                <circle cx="14" cy="9" r="1.8" fill="none" stroke="var(--accent)" strokeWidth="1" />
+                <rect y="12" width="28" height="6" fill="var(--accent)" />
               </svg>
-              <div style={{ color: '#FF4630', fontSize: 'var(--font-size-caption)', fontFamily: 'monospace', letterSpacing: '1px', textAlign: 'center', lineHeight: 1.4 }}>
+              <div style={{ color: 'var(--accent)', fontSize: 'var(--font-size-caption)', fontFamily: 'monospace', letterSpacing: '1px', textAlign: 'center', lineHeight: 1.4 }}>
                 FORGED IN INDIA.<br />FOR THE GRID.
               </div>
             </div>
             <div style={{ flex: 1, minWidth: '200px', display: 'flex', justifyContent: 'flex-end' }}>
-              <div style={{ color: '#FF4630', fontSize: 'var(--font-size-caption)', fontFamily: 'monospace', textAlign: 'right', letterSpacing: '1px', lineHeight: 1.4 }}>
+              <div style={{ color: 'var(--accent)', fontSize: 'var(--font-size-caption)', fontFamily: 'monospace', textAlign: 'right', letterSpacing: '1px', lineHeight: 1.4 }}>
                 TRANSITOPS HQ<br />
                 1100 ASHRAM ROAD,<br />
                 STE 2100<br />
@@ -252,7 +252,7 @@ export default function LandingPage() {
             <h1 style={{
               fontSize: 'clamp(48px, 14vw, 180px)',
               fontWeight: 900,
-              color: '#FF4630',
+              color: 'var(--accent)',
               letterSpacing: '-0.06em',
               lineHeight: 0.8,
               margin: '0 0 -8px 0',
@@ -271,10 +271,10 @@ export default function LandingPage() {
             flexWrap: 'wrap',
             gap: 'var(--space-4)',
             fontSize: 'var(--font-size-caption)',
-            color: '#FF4630',
+            color: 'var(--accent)',
             fontFamily: 'monospace',
             letterSpacing: '1px',
-            borderTop: '1px solid #FF4630',
+            borderTop: '1px solid var(--accent)',
             paddingTop: 'var(--space-4)',
             marginTop: 'var(--space-6)',
             zIndex: 1,
