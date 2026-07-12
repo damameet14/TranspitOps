@@ -1,294 +1,279 @@
 import { Link } from 'react-router-dom';
-import PageTransition from '../components/motion/PageTransition';
-import ScrollProgress from '../components/motion/ScrollProgress';
-import TextReveal from '../components/motion/TextReveal';
-import RouteLineAnimation from '../components/motion/RouteLineAnimation';
-import MagneticElement from '../components/motion/MagneticElement';
-import ClickBurst from '../components/motion/ClickBurst';
-import ThreeDCarousel from '../components/motion/ThreeDCarousel';
-import HorizontalStory from '../components/motion/HorizontalStory';
-import VerticalColumnStory from '../components/motion/VerticalColumnStory';
-import ImmersiveZoom from '../components/motion/ImmersiveZoom';
-import PageTurnSequence from '../components/motion/PageTurnSequence';
-import LottieIllustration from '../components/motion/LottieIllustration';
-import TextScramble from '../components/motion/TextScramble';
-import PixelHover from '../components/motion/PixelHover';
-import { useEffect } from 'react';
-import { initSmoothScroll, destroySmoothScroll } from '../animation/scrollManager';
+import heroAsset from '../assets/hero.png';
+
+const platformCapabilities = [
+  {
+    number: '01',
+    title: 'Fleet registry',
+    body: 'Keep vehicles, capacity, odometer readings, status, and service readiness in one operating view.',
+  },
+  {
+    number: '02',
+    title: 'Driver operations',
+    body: 'Track driver availability, safety score, license validity, and trip eligibility before dispatch.',
+  },
+  {
+    number: '03',
+    title: 'Trip lifecycle',
+    body: 'Move work from draft to dispatched, completed, or cancelled with resource status kept in sync.',
+  },
+  {
+    number: '04',
+    title: 'Maintenance control',
+    body: 'Log issues, active repairs, closed maintenance, and vehicle readiness without losing history.',
+  },
+  {
+    number: '05',
+    title: 'Fuel and expense tracking',
+    body: 'Capture fuel logs, vehicle expenses, trip cost context, and finance-ready operating records.',
+  },
+  {
+    number: '06',
+    title: 'Operational reporting',
+    body: 'Review utilization, trip performance, maintenance load, expense patterns, and daily KPIs.',
+  },
+];
+
+const workflowSteps = [
+  ['01', 'Register', 'Create vehicles and drivers with the operational fields dispatch teams need.'],
+  ['02', 'Plan', 'Draft trips with cargo weight, route distance, vehicle, driver, and revenue context.'],
+  ['03', 'Dispatch', 'Move eligible drivers and vehicles into active trips with lifecycle status updates.'],
+  ['04', 'Review', 'Complete trips, record fuel use, release resources, and report performance.'],
+] as const;
+
+const roles = [
+  {
+    title: 'Fleet Manager',
+    text: 'Owns vehicles, drivers, dispatch, trip lifecycle decisions, and operational readiness.',
+    modules: ['Dashboard', 'Vehicles', 'Drivers', 'Trips', 'Maintenance'],
+  },
+  {
+    title: 'Driver',
+    text: 'Works inside assigned trip flows and keeps trip completion details accurate.',
+    modules: ['Trips', 'Current work', 'Completion', 'Status updates'],
+  },
+  {
+    title: 'Safety Officer',
+    text: 'Reviews driver safety, maintenance exposure, vehicle condition, and operational risk.',
+    modules: ['Drivers', 'Maintenance', 'Reports', 'Read-only fleet view'],
+  },
+  {
+    title: 'Financial Analyst',
+    text: 'Tracks fuel logs, expenses, revenue context, and reporting for transport cost control.',
+    modules: ['Fuel Logs', 'Expenses', 'Reports', 'Dashboard'],
+  },
+];
+
+const dashboardMetrics = [
+  ['Vehicles ready', '18'],
+  ['Active trips', '6'],
+  ['Drivers available', '12'],
+  ['Maintenance open', '4'],
+  ['Fuel logs', '32'],
+  ['Monthly expense', '2.8L'],
+] as const;
 
 export default function LandingPage() {
-  useEffect(() => {
-    initSmoothScroll();
-    return () => {
-      destroySmoothScroll();
-    };
-  }, []);
-
   return (
-    <PageTransition>
-      <ScrollProgress />
-      
-      {/* 1. HERO SECTION */}
-      <header
-        style={{
-          borderBottom: '1px solid var(--border)',
-          minHeight: '85vh',
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'space-between',
-          padding: 'var(--space-8) var(--space-6)',
-          position: 'relative',
-          overflow: 'hidden'
-        }}
-      >
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-          <span style={{ fontSize: 'var(--font-size-h3)', fontWeight: 600, color: 'var(--accent)', letterSpacing: '0.05em' }}>
-            TransitOps
-          </span>
-          <Link to="/login" style={{ color: 'var(--text-primary)', fontSize: 'var(--font-size-small)', fontWeight: 500 }}>
-            Sign In →
-          </Link>
-        </div>
-
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-12)', alignItems: 'center', margin: 'var(--space-10) 0' }}>
-          <div>
-            <span style={{ fontSize: 'var(--font-size-caption)', color: 'var(--accent)', textTransform: 'uppercase', fontWeight: 'bold', letterSpacing: '0.06em' }}>
-              Next-Gen Fleet Control
-            </span>
-            <TextReveal
-              tag="h1"
-              pattern="line"
-              text={"One system.\nEvery asset.\nClear operations."}
-              className="hero-headline"
-              style={{ fontSize: '42px', fontWeight: 600, margin: 'var(--space-4) 0', lineHeight: 1.15 }}
-            />
-            <p className="text-secondary" style={{ fontSize: 'var(--font-size-body)', marginBottom: 'var(--space-6)', maxWidth: '420px', lineHeight: 1.6 }}>
-              A high-precision operating system tracking logistics flow, maintenance logs, and personnel handovers.
-            </p>
-            <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
-              <MagneticElement>
-                <ClickBurst>
-                  <Link to="/login" className="button button-primary" style={{ padding: 'var(--space-3) var(--space-6)' }}>
-                    Launch Dashboard
-                  </Link>
-                </ClickBurst>
-              </MagneticElement>
-              <Link to="/login" className="button button-secondary" style={{ padding: 'var(--space-3) var(--space-6)' }}>
-                System Status
-              </Link>
-            </div>
-          </div>
-
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-            <RouteLineAnimation />
-            <div style={{ marginTop: 'var(--space-6)', fontSize: 'var(--font-size-caption)', color: 'var(--text-muted)' }}>
-              <TextScramble text="Route synchronization: ACTIVE" />
-            </div>
-          </div>
-        </div>
-
-        <div style={{ display: 'flex', justifyContent: 'center' }}>
-          <span style={{ fontSize: 'var(--font-size-caption)', color: 'var(--text-secondary)' }}>
-            Scroll to discover the system ↓
-          </span>
-        </div>
+    <main className="landing-page">
+      <header className="landing-header">
+        <Link to="/" className="landing-brand" aria-label="TransitOps home">
+          <span className="landing-brand-mark">TO</span>
+          <span>TransitOps</span>
+        </Link>
+        <nav className="landing-nav" aria-label="Landing page sections">
+          <a href="#platform">Platform</a>
+          <a href="#workflow">Workflow</a>
+          <a href="#roles">Roles</a>
+          <a href="#visibility">Visibility</a>
+        </nav>
+        <Link to="/login" className="landing-login-link">
+          Log in
+        </Link>
       </header>
 
-      {/* 2. PINNED LIFECYCLE STORYTELLING */}
-      <section style={{ borderBottom: '1px solid var(--border)', padding: 'var(--space-12) 0' }}>
-        <PageTurnSequence />
+      <section className="landing-hero" aria-labelledby="landing-hero-title">
+        <div className="landing-hero-copy">
+          <p className="landing-section-label">Smart transport operation platform</p>
+          <h1 id="landing-hero-title">
+            TransitOps keeps every fleet movement visible.
+          </h1>
+          <p className="landing-hero-text">
+            One ERP workspace for fleet managers, drivers, safety officers, and finance teams to run vehicles,
+            trips, maintenance, fuel logs, expenses, and reports from the same operational truth.
+          </p>
+          <div className="landing-hero-actions">
+            <Link to="/login" className="button button-primary">
+              Launch dashboard
+            </Link>
+            <a href="#platform" className="button button-secondary">
+              Explore platform
+            </a>
+          </div>
+        </div>
+
+        <div className="landing-hero-visual" aria-label="TransitOps dashboard preview">
+          <img src={heroAsset} alt="" className="landing-hero-asset" />
+          <div className="landing-preview-card">
+            <div className="landing-preview-topbar">
+              <strong>TransitOps Control</strong>
+              <span>Live</span>
+            </div>
+            <div className="landing-preview-grid">
+              {dashboardMetrics.slice(0, 4).map(([label, value]) => (
+                <div key={label} className="landing-preview-metric">
+                  <span>{label}</span>
+                  <strong>{value}</strong>
+                </div>
+              ))}
+            </div>
+            <div className="landing-route-panel">
+              <div>
+                <span>Route</span>
+                <strong>Ahmedabad to Surat</strong>
+              </div>
+              <span className="landing-status-pill">Dispatched</span>
+            </div>
+          </div>
+        </div>
       </section>
 
-      {/* 3. PLATFORM CAPABILITIES (HORIZONTAL SCROLL) */}
-      <section style={{ borderBottom: '1px solid var(--border)' }}>
-        <HorizontalStory />
+      <section className="landing-proof-strip" aria-label="TransitOps proof points">
+        {[
+          ['Centralized', 'Vehicles, drivers, trips, maintenance, fuel, expenses, and reports share one workspace.'],
+          ['Rule-aware', 'Trip creation checks resource availability, driver eligibility, and capacity before work moves.'],
+          ['Lifecycle-driven', 'Draft, dispatch, completion, and cancellation states stay visible across the operation.'],
+          ['Role-ready', 'Fleet, driver, safety, and finance users see the workflows that match their responsibility.'],
+        ].map(([heading, text]) => (
+          <article key={heading}>
+            <h2>{heading}</h2>
+            <p>{text}</p>
+          </article>
+        ))}
       </section>
 
-      {/* 4. OPERATIONAL DETAILS CAROUSEL */}
-      <section style={{ borderBottom: '1px solid var(--border)', padding: 'var(--space-12) var(--space-6)', background: 'var(--background-page)' }}>
-        <div style={{ maxWidth: '800px', margin: '0 auto', textAlign: 'center', marginBottom: 'var(--space-10)' }}>
-          <span className="status-badge status-badge-available" style={{ marginBottom: 'var(--space-2)' }}>System Modules</span>
-          <h2 style={{ fontSize: 'var(--font-size-h1)', fontWeight: 600 }}>Operational Sub-systems</h2>
-          <p className="text-secondary" style={{ marginTop: 'var(--space-2)' }}>
-            Manage resources, audits, and compliance schedules inside the same database schema.
+      <section className="landing-platform-section" id="platform">
+        <div className="landing-section-heading">
+          <p className="landing-section-label">Platform</p>
+          <h2>Every transport workflow, connected.</h2>
+          <p>
+            TransitOps turns day-to-day logistics work into structured modules with shared records, clear ownership,
+            and status changes that teams can trust.
           </p>
         </div>
-        <ThreeDCarousel />
+        <div className="landing-capability-grid">
+          {platformCapabilities.map((capability) => (
+            <article className="landing-capability" key={capability.number}>
+              <span>{capability.number}</span>
+              <h3>{capability.title}</h3>
+              <p>{capability.body}</p>
+            </article>
+          ))}
+        </div>
       </section>
 
-      {/* 5. ROLE PREVIEWS */}
-      <section style={{ borderBottom: '1px solid var(--border)', padding: 'var(--space-12) var(--space-6)' }}>
-        <div style={{ maxWidth: '800px', margin: '0 auto', textAlign: 'center', marginBottom: 'var(--space-10)' }}>
-          <h2 style={{ fontSize: 'var(--font-size-h1)', fontWeight: 600 }}>Access Points</h2>
-          <p className="text-secondary" style={{ marginTop: 'var(--space-2)' }}>
-            Select a role to preview interface scopes.
+      <section className="landing-workflow-section" id="workflow">
+        <p className="landing-section-label">Workflow</p>
+        <h2>From planning to completion, every trip has a clean trail.</h2>
+        <div className="landing-workflow-steps">
+          {workflowSteps.map(([number, title, text]) => (
+            <article key={number}>
+              <span>{number}</span>
+              <h3>{title}</h3>
+              <p>{text}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="landing-dashboard-section" id="visibility">
+        <div className="landing-section-heading">
+          <p className="landing-section-label">Operational visibility</p>
+          <h2>A calm dashboard for busy fleet teams.</h2>
+          <p>
+            See what is available, active, delayed, under maintenance, and financially important before it becomes a
+            bottleneck.
           </p>
         </div>
-        <VerticalColumnStory />
-      </section>
-
-      {/* 6. IMMERSIVE PREVIEW ZOOM */}
-      <section style={{ borderBottom: '1px solid var(--border)' }}>
-        <ImmersiveZoom />
-      </section>
-
-      {/* 7. VECTOR ILLUSTRATION FAMILY */}
-      <section style={{ borderBottom: '1px solid var(--border)', padding: 'var(--space-12) var(--space-6)', background: 'var(--background-surface)' }}>
-        <div style={{ maxWidth: '1000px', margin: '0 auto', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-10)', alignItems: 'center' }}>
-          <div>
-            <h2 style={{ fontSize: 'var(--font-size-h1)', fontWeight: 600, color: 'var(--accent)' }}>System Integrity</h2>
-            <p className="text-secondary" style={{ marginTop: 'var(--space-4)', lineHeight: 1.6 }}>
-              A robust, unified lifecycle system that connects hardware assets to compliance checklists. Avoid discrepancies through cryptographically signed audits.
-            </p>
-            <div style={{ marginTop: 'var(--space-6)', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }}>
-              <PixelHover label="Asset Registry">
-                <div style={{ fontWeight: 600 }}>TO-REGISTRY</div>
-                <div style={{ fontSize: 'var(--font-size-caption)', color: 'var(--text-secondary)', marginTop: '4px' }}>Immutable ledger entry</div>
-              </PixelHover>
-              <PixelHover label="Allocation Flow">
-                <div style={{ fontWeight: 600 }}>TO-FLOW</div>
-                <div style={{ fontSize: 'var(--font-size-caption)', color: 'var(--text-secondary)', marginTop: '4px' }}>Handover custody state</div>
-              </PixelHover>
+        <div className="landing-dashboard-frame">
+          <aside className="landing-dashboard-sidebar">
+            {['Dashboard', 'Vehicles', 'Drivers', 'Trips', 'Maintenance', 'Fuel Logs', 'Expenses', 'Reports'].map(
+              (item) => (
+                <span key={item} className={item === 'Dashboard' ? 'is-active' : ''}>
+                  {item}
+                </span>
+              ),
+            )}
+          </aside>
+          <div className="landing-dashboard-main">
+            <div className="landing-dashboard-title">
+              <div>
+                <span>Today</span>
+                <h3>Fleet overview</h3>
+              </div>
+              <span className="landing-status-pill">Healthy</span>
             </div>
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'center' }}>
-            <LottieIllustration />
+            <div className="landing-dashboard-metrics">
+              {dashboardMetrics.map(([label, value]) => (
+                <article key={label}>
+                  <span>{label}</span>
+                  <strong>{value}</strong>
+                </article>
+              ))}
+            </div>
+            <div className="landing-activity-panel">
+              <h3>Recent activity</h3>
+              <p>Trip #42 dispatched with Truck GJ01AB1234 and driver Amit Patel.</p>
+              <p>Brake inspection opened for vehicle Eicher Pro 3015.</p>
+              <p>Fuel log added after completed Ahmedabad local delivery.</p>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* 8. WebGL OPERATIONAL NETWORK FOOTER */}
-      <footer
-        style={{
-          background: 'var(--background-page)',
-          padding: 'var(--space-8) var(--space-6)',
-          position: 'relative',
-          display: 'flex',
-          flexDirection: 'column',
-        }}
-      >
-        {/* Main Card Container */}
-        <div
-          style={{
-            background: '#141414',
-            border: '2px solid #FF4630',
-            borderRadius: 'var(--radius-card)',
-            padding: 'var(--space-8) var(--space-8) var(--space-4) var(--space-8)',
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'space-between',
-            position: 'relative',
-            overflow: 'hidden',
-            minHeight: '520px',
-            boxSizing: 'border-box',
-          }}
-        >
-          {/* Top Row: Logo & Columns */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 'var(--space-8)', zIndex: 1, pointerEvents: 'auto' }}>
-            {/* Logo */}
-            <div>
-              <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 8L6 16L12 24" stroke="#FF4630" strokeWidth="3" strokeLinecap="square" />
-                <path d="M20 8L26 16L20 24" stroke="#FF4630" strokeWidth="3" strokeLinecap="square" />
-              </svg>
-            </div>
-
-            {/* Links Columns Container */}
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '64px' }}>
-              {/* Platform */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
-                <h4 style={{ color: '#FF4630', fontSize: 'var(--font-size-body)', fontWeight: 600, letterSpacing: '0.05em', margin: '0 0 var(--space-2) 0', fontFamily: 'var(--font-family)' }}>PLATFORM</h4>
-                <Link to="/login" style={{ color: '#FF4630', textDecoration: 'none', fontSize: 'var(--font-size-small)', fontFamily: 'monospace' }}>↳ LAUNCH LEDGER</Link>
-                <Link to="/login" style={{ color: '#FF4630', textDecoration: 'none', fontSize: 'var(--font-size-small)', fontFamily: 'monospace' }}>↳ TELEMETRY STREAM</Link>
-                <Link to="/login" style={{ color: '#FF4630', textDecoration: 'none', fontSize: 'var(--font-size-small)', fontFamily: 'monospace' }}>↳ CONTROL BOARD</Link>
-              </div>
-
-              {/* Solutions */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
-                <h4 style={{ color: '#FF4630', fontSize: 'var(--font-size-body)', fontWeight: 600, letterSpacing: '0.05em', margin: '0 0 var(--space-2) 0', fontFamily: 'var(--font-family)' }}>SOLUTIONS⁴</h4>
-                <span style={{ color: '#FF4630', fontSize: 'var(--font-size-small)', fontFamily: 'monospace' }}>↳ ROUTING ENGINE</span>
-                <span style={{ color: '#FF4630', fontSize: 'var(--font-size-small)', fontFamily: 'monospace' }}>↳ ASSET TELEMETRY</span>
-                <span style={{ color: '#FF4630', fontSize: 'var(--font-size-small)', fontFamily: 'monospace' }}>↳ LEDGER AUDIT</span>
-                <span style={{ color: '#FF4630', fontSize: 'var(--font-size-small)', fontFamily: 'monospace' }}>↳ DISPATCH AUTO</span>
-              </div>
-
-              {/* About */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
-                <h4 style={{ color: '#FF4630', fontSize: 'var(--font-size-body)', fontWeight: 600, letterSpacing: '0.05em', margin: '0 0 var(--space-2) 0', fontFamily: 'var(--font-family)' }}>ABOUT²</h4>
-                <Link to="/login" style={{ color: '#FF4630', textDecoration: 'none', fontSize: 'var(--font-size-small)', fontFamily: 'monospace' }}>↳ COMPANY</Link>
-                <Link to="/login" style={{ color: '#FF4630', textDecoration: 'none', fontSize: 'var(--font-size-small)', fontFamily: 'monospace' }}>↳ CAREERS</Link>
-                <Link to="/login" style={{ color: '#FF4630', textDecoration: 'none', fontSize: 'var(--font-size-small)', fontFamily: 'monospace' }}>INSIGHTS</Link>
-                <Link to="/login" style={{ color: '#FF4630', textDecoration: 'none', fontSize: 'var(--font-size-small)', fontFamily: 'monospace' }}>CONTACT</Link>
-              </div>
-            </div>
-          </div>
-
-          {/* Middle Row: Empty / Flag / Address */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 'var(--space-6)', marginTop: 'var(--space-8)', zIndex: 1, pointerEvents: 'auto' }}>
-            <div style={{ flex: 1, minWidth: '120px' }}></div>
-            <div style={{ flex: 1, minWidth: '180px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 'var(--space-2)' }}>
-              <svg width="28" height="18" viewBox="0 0 28 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <rect width="28" height="6" fill="#FF4630" />
-                <rect y="6" width="28" height="6" fill="none" stroke="#FF4630" strokeWidth="1" />
-                <circle cx="14" cy="9" r="1.8" fill="none" stroke="#FF4630" strokeWidth="1" />
-                <rect y="12" width="28" height="6" fill="#FF4630" />
-              </svg>
-              <div style={{ color: '#FF4630', fontSize: 'var(--font-size-caption)', fontFamily: 'monospace', letterSpacing: '1px', textAlign: 'center', lineHeight: 1.4 }}>
-                FORGED IN INDIA.<br />FOR THE GRID.
-              </div>
-            </div>
-            <div style={{ flex: 1, minWidth: '200px', display: 'flex', justifyContent: 'flex-end' }}>
-              <div style={{ color: '#FF4630', fontSize: 'var(--font-size-caption)', fontFamily: 'monospace', textAlign: 'right', letterSpacing: '1px', lineHeight: 1.4 }}>
-                TRANSITOPS HQ<br />
-                1100 ASHRAM ROAD,<br />
-                STE 2100<br />
-                AHMEDABAD, GJ 380009
-              </div>
-            </div>
-          </div>
-
-          {/* Big Brand Text */}
-          <div style={{ width: '100%', display: 'flex', justifyContent: 'center', marginTop: 'var(--space-8)', zIndex: 1, pointerEvents: 'none', userSelect: 'none' }}>
-            <h1 style={{
-              fontSize: 'clamp(48px, 14vw, 180px)',
-              fontWeight: 900,
-              color: '#FF4630',
-              letterSpacing: '-0.06em',
-              lineHeight: 0.8,
-              margin: '0 0 -8px 0',
-              fontFamily: 'var(--font-family)',
-              textTransform: 'uppercase',
-            }}>
-              TRANSITOPS
-            </h1>
-          </div>
-
-          {/* Bottom metadata */}
-          <div style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            flexWrap: 'wrap',
-            gap: 'var(--space-4)',
-            fontSize: 'var(--font-size-caption)',
-            color: '#FF4630',
-            fontFamily: 'monospace',
-            letterSpacing: '1px',
-            borderTop: '1px solid #FF4630',
-            paddingTop: 'var(--space-4)',
-            marginTop: 'var(--space-6)',
-            zIndex: 1,
-            pointerEvents: 'auto',
-          }}>
-            <span>©2026 TRANSITOPS, INC.</span>
-            <div style={{ display: 'flex', gap: 'var(--space-6)', flexWrap: 'wrap' }}>
-              <Link to="/login" style={{ color: 'inherit', textDecoration: 'none' }}>LICENSE AGREEMENT</Link>
-              <Link to="/login" style={{ color: 'inherit', textDecoration: 'none' }}>PRIVACY POLICY</Link>
-              <Link to="/login" style={{ color: 'inherit', textDecoration: 'none' }}>TERMS OF USE</Link>
-            </div>
-          </div>
+      <section className="landing-roles-section" id="roles">
+        <div className="landing-section-heading">
+          <p className="landing-section-label">Role-based operation</p>
+          <h2>The right view for every transport responsibility.</h2>
+          <p>
+            The existing ERP roles stay intact. The landing page simply introduces how those roles work inside the
+            product.
+          </p>
         </div>
+        <div className="landing-role-grid">
+          {roles.map((role) => (
+            <article className="landing-role-card" key={role.title}>
+              <h3>{role.title}</h3>
+              <p>{role.text}</p>
+              <ul>
+                {role.modules.map((moduleName) => (
+                  <li key={moduleName}>{moduleName}</li>
+                ))}
+              </ul>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="landing-final-section">
+        <p className="landing-section-label">Start with clarity</p>
+        <h2>Run transport operations from one shared system.</h2>
+        <p>
+          Sign in to manage fleet records, dispatch trips, close maintenance, record fuel and expenses, and review
+          operational reports.
+        </p>
+        <Link to="/login" className="button button-primary">
+          Go to login
+        </Link>
+      </section>
+
+      <footer className="landing-footer">
+        <div>
+          <strong>TransitOps</strong>
+          <p>Smart transport operations platform for fleet visibility, lifecycle control, and reporting.</p>
+        </div>
+        <p>Built for fleet managers, drivers, safety officers, and finance teams.</p>
       </footer>
-    </PageTransition>
+    </main>
   );
 }
