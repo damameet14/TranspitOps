@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../shared/auth_context';
 
 export default function LoginPage() {
@@ -72,6 +73,8 @@ export default function LoginPage() {
             {loading ? 'Signing in...' : 'Sign in'}
           </button>
         </form>
+
+        <p className="authentication-switch">New to TransitOps? <Link to="/register">Register a demo workspace</Link></p>
 
         <div style={{ marginTop: 'var(--space-6)', borderTop: '1px solid var(--border)', paddingTop: 'var(--space-4)' }}>
           <p className="text-muted" style={{ fontSize: 'var(--font-size-caption)', marginBottom: 'var(--space-3)', textAlign: 'center' }}>

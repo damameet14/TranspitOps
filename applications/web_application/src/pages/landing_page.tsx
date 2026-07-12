@@ -45,9 +45,10 @@ export default function LandingPage() {
           <span style={{ fontSize: 'var(--font-size-h3)', fontWeight: 600, color: 'var(--accent)', letterSpacing: '0.05em' }}>
             TransitOps
           </span>
-          <Link to="/login" style={{ color: 'var(--text-primary)', fontSize: 'var(--font-size-small)', fontWeight: 500 }}>
-            Sign In →
-          </Link>
+          <div style={{ display: 'flex', gap: 'var(--space-4)', alignItems: 'center' }}>
+            <Link to="/register" className="button button-primary button-small">Register</Link>
+            <Link to="/login" style={{ color: 'var(--text-primary)', fontSize: 'var(--font-size-small)', fontWeight: 500 }}>Sign In</Link>
+          </div>
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-12)', alignItems: 'center', margin: 'var(--space-10) 0' }}>

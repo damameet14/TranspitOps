@@ -1,17 +1,27 @@
 import { createContext, useContext, useState, type ReactNode } from 'react';
 import apiClient from '../shared/api_client';
+import type { UserRole } from './role_access';
 
-interface User {
+export interface User {
   id: number;
   email: string;
   full_name: string;
-  role: string;
+  role: UserRole;
+}
+
+export interface DemoRegistrationRequest {
+  fullName: string;
+  email: string;
+  role: UserRole;
+  demoEmail: string;
+  demoPassword: string;
 }
 
 interface AuthContextType {
   user: User | null;
   token: string | null;
   login: (email: string, password: string) => Promise<void>;
+  registerDemoProfile: (request: DemoRegistrationRequest) => Promise<void>;
   logout: () => void;
   isAuthenticated: boolean;
 }
@@ -32,7 +42,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       id: data.user_id,
       email: email,
       full_name: data.full_name,
-      role: data.role,
+      role: data.role as UserRole,
     };
     localStorage.setItem('access_token', data.access_token);
     localStorage.setItem('user', JSON.stringify(newUser));
@@ -40,15 +50,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(newUser);
   };
 
+  const registerDemoProfile = async (request: DemoRegistrationRequest) => {
+    const response = await apiClient.post('/user-authentication/login', {
+      email: request.demoEmail,
+      password: request.demoPassword,
+    });
+    const data = response.data;
+    const registeredUser: User = { id: data.user_id, email: request.email, full_name: request.fullName, role: request.role };
+    localStorage.setItem('access_token', data.access_token);
+    localStorage.setItem('user', JSON.stringify(registeredUser));
+    localStorage.setItem('demo_registration', 'true');
+    setToken(data.access_token);
+    setUser(registeredUser);
+  };
+
   const logout = () => {
     localStorage.removeItem('access_token');
     localStorage.removeItem('user');
+    localStorage.removeItem('demo_registration');
     setToken(null);
     setUser(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, login, logout, isAuthenticated: !!token }}>
+    <AuthContext.Provider value={{ user, token, login, registerDemoProfile, logout, isAuthenticated: !!token }}>
       {children}
     </AuthContext.Provider>
   );

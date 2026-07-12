@@ -25,7 +25,7 @@ ChartJS.register(
 );
 
 const CHART_COLORS = ['#B85C4F', '#4A6B8A', '#7A9270', '#C79A5B', '#8B76A8', '#A9A79E'];
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
 
 type ReportType = 'trip-summary' | 'expense-breakdown' | 'driver-performance' | 'maintenance-cost';
 
