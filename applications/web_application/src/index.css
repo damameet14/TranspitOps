@@ -104,6 +104,24 @@
   /* Sidebar */
   --sidebar-width: 260px;
   --topbar-height: 56px;
+
+  /* Global duration tokens */
+  --duration-instant: 80ms;
+  --duration-quick: 120ms;
+  --duration-fast: 160ms;
+  --duration-standard: 220ms;
+  --duration-medium: 320ms;
+  --duration-slow: 480ms;
+  --duration-story: 720ms;
+  --duration-cinematic: 1000ms;
+
+  /* Easing system */
+  --ease-linear: linear;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-enter: cubic-bezier(0, 0, 0, 1);
+  --ease-exit: cubic-bezier(0.4, 0, 1, 1);
+  --ease-emphasized: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-soft: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 
@@ -618,6 +636,8 @@ h3 { font-size: var(--font-size-h3); }
   font-weight: var(--font-weight-medium);
   border-radius: 999px;
   white-space: nowrap;
+  transition: background-color var(--duration-standard) var(--ease-standard),
+              color var(--duration-standard) var(--ease-standard);
 }
 
 .status-badge-available     { background: var(--state-available-background);  color: var(--state-available-text); }
@@ -909,4 +929,153 @@ h3 { font-size: var(--font-size-h3); }
   .form-row {
     grid-template-columns: 1fr;
   }
+}
+
+/* ========================================
+   19. Immersive Motion & Interaction System
+   ======================================== */
+
+/* Lenis smooth scrolling integration */
+html.lenis, html.lenis body {
+  height: auto;
+}
+.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+.lenis-smooth [data-aos] {
+  transition-property: opacity, transform;
+}
+
+/* Scroll progress bar */
+.scroll-progress-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-color: #E5E5E0; /* Light mode track */
+  z-index: 1000;
+  transform-origin: 0% 50%;
+}
+[data-mode="dark"] .scroll-progress-bar {
+  background-color: #2A2A28; /* Dark mode track */
+}
+.scroll-progress-indicator {
+  height: 100%;
+  width: 100%;
+  background-color: #C13B2E; /* Light mode progress */
+  transform-origin: 0% 50%;
+}
+[data-mode="dark"] .scroll-progress-indicator {
+  background-color: #5B87BE; /* Dark mode progress */
+}
+
+/* Cursor follower halo */
+.cursor-follower {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 18px;
+  height: 18px;
+  border: 1px solid var(--accent);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9999;
+  transform: translate(-50%, -50%);
+  opacity: 0.45;
+  transition: width 0.2s, height 0.2s, opacity 0.2s;
+  will-change: transform, width, height, opacity;
+}
+
+/* Text mask reveal */
+.text-mask-reveal {
+  overflow: hidden;
+  display: block;
+}
+.text-mask-reveal-line {
+  display: inline-block;
+  will-change: transform;
+}
+
+/* Pixelated reconstruction */
+.pixel-grid {
+  display: grid;
+  position: relative;
+  overflow: hidden;
+}
+.pixel-cell {
+  background-color: var(--accent);
+  transition: transform 0.25s var(--ease-emphasized), opacity 0.25s;
+}
+
+/* 3D Paper Editorial sheet turn effect */
+.perspective-container {
+  perspective: 1000px;
+  transform-style: preserve-3d;
+}
+.sheet-page {
+  background: var(--background-surface);
+  border: 1px solid var(--border);
+  transition: transform var(--duration-medium) var(--ease-soft), opacity var(--duration-medium) var(--ease-soft);
+  backface-visibility: hidden;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+/* WebGL canvas overlay */
+.webgl-footer-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Fallback SVG for WebGL */
+.webgl-fallback-svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  opacity: 0.2;
+}
+
+/* Development Debug Panel styles */
+.motion-debug-panel {
+  position: fixed;
+  bottom: 16px;
+  right: 16px;
+  background: var(--background-surface);
+  border: 2px solid var(--accent);
+  padding: 12px;
+  border-radius: 8px;
+  z-index: 99999;
+  font-family: monospace;
+  font-size: 11px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  max-width: 280px;
+}
+.motion-debug-title {
+  font-weight: bold;
+  color: var(--accent);
+  margin-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 4px;
+}
+.motion-debug-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+.motion-debug-select, .motion-debug-button {
+  background: var(--background-page);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  font-size: 10px;
+  padding: 2px 4px;
+  cursor: pointer;
 }

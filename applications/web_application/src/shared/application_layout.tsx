@@ -1,5 +1,6 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../shared/auth_context';
+import PageTransition from '../components/motion/PageTransition';
 
 const NAV_SECTIONS = [
   {
@@ -86,7 +87,9 @@ export default function ApplicationLayout() {
       </nav>
 
       <main className="main-content">
-        <Outlet />
+        <PageTransition>
+          <Outlet />
+        </PageTransition>
       </main>
     </div>
   );
