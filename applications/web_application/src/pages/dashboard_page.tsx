@@ -3,10 +3,7 @@ import apiClient from '../shared/api_client';
 import { getResolvedMotionLevel } from '../animation/reducedMotion';
 import FeedbackCard from '../shared/feedback_card';
 import { getApiErrorMessage } from '../shared/api_error_message';
-<<<<<<< HEAD
 import { useAuth } from '../shared/auth_context';
-=======
->>>>>>> 8b2d77ce78de4ecc024e41e576d67e9f1ba9f407
 
 interface DashboardKpis {
   total_vehicles: number;
@@ -69,37 +66,16 @@ export default function DashboardPage() {
       </div>
       <div className="page-content">
         <FeedbackCard message={feedbackMessage} onDismiss={() => setFeedbackMessage('')} />
-<<<<<<< HEAD
         {(user?.role === 'fleet_manager' || user?.role === 'admin') && <div className="card mb-6">
-=======
-        <div className="card mb-6">
->>>>>>> 8b2d77ce78de4ecc024e41e576d67e9f1ba9f407
           <div className="form-row">
             <div className="form-group"><label className="form-label">Vehicle Type</label><select className="form-select" value={filters.vehicle_type} onChange={event => setFilters({...filters, vehicle_type:event.target.value})}><option value="">All types</option><option value="truck">Truck</option><option value="van">Van</option><option value="bus">Bus</option><option value="bike">Bike</option></select></div>
             <div className="form-group"><label className="form-label">Vehicle Status</label><select className="form-select" value={filters.vehicle_status} onChange={event => setFilters({...filters, vehicle_status:event.target.value})}><option value="">All statuses</option><option value="available">Available</option><option value="on_trip">On trip</option><option value="in_shop">In shop</option><option value="retired">Retired</option></select></div>
             <div className="form-group"><label className="form-label">Region</label><select className="form-select" value={filters.region} onChange={event => setFilters({...filters, region:event.target.value})}><option value="">All regions</option>{regions.map(region => <option key={region} value={region}>{region}</option>)}</select></div>
           </div>
-<<<<<<< HEAD
         </div>}
         {/* KPI Cards */}
         <div className="kpi-grid">
           {roleDashboardCards.map(([label, value]) => <KpiCard key={label} label={label} value={value} />)}
-=======
-        </div>
-        {/* KPI Cards */}
-        <div className="kpi-grid">
-          <KpiCard label="Active Vehicles" value={kpis.active_vehicles} />
-          <KpiCard label="Drivers On Duty" value={kpis.drivers_on_duty} />
-          <KpiCard label="Pending Trips" value={kpis.pending_trips} />
-          <KpiCard label="Active Trips" value={kpis.active_trips} />
-          <KpiCard label="Completed Trips" value={kpis.completed_trips} />
-          <KpiCard label="Fleet Utilization" value={`${kpis.fleet_utilization_percent}%`} />
-          <KpiCard label="Avg Safety Score" value={kpis.average_safety_score} />
-          <KpiCard label="Total Revenue" value={formatCurrency(kpis.total_revenue)} />
-          <KpiCard label="Total Fuel Cost" value={formatCurrency(kpis.total_fuel_cost)} />
-          <KpiCard label="Total Expenses" value={formatCurrency(kpis.total_expenses)} />
-          <KpiCard label="Maintenance Cost" value={formatCurrency(kpis.total_maintenance_cost)} />
->>>>>>> 8b2d77ce78de4ecc024e41e576d67e9f1ba9f407
         </div>
 
         {/* Status Breakdowns */}

@@ -13,11 +13,8 @@ import FuelLogsPage from './pages/fuel_logs_page';
 import ExpensesPage from './pages/expenses_page';
 import ReportsPage from './pages/reports_page';
 import VehicleDocumentsPage from './pages/vehicle_documents_page';
-<<<<<<< HEAD
 import AdminPage from './pages/admin_page';
 import ProfilePage from './pages/profile_page';
-=======
->>>>>>> 8b2d77ce78de4ecc024e41e576d67e9f1ba9f407
 import CursorFollower from './components/motion/CursorFollower';
 import MotionDebugPanel from './components/motion/MotionDebugPanel';
 import { useEffect } from 'react';

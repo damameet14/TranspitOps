@@ -3,11 +3,7 @@
 import enum
 from datetime import datetime, timezone
 
-<<<<<<< HEAD
 from sqlalchemy import Boolean, DateTime, Enum, ForeignKey, String
-=======
-from sqlalchemy import DateTime, Enum, ForeignKey, String
->>>>>>> 8b2d77ce78de4ecc024e41e576d67e9f1ba9f407
 from sqlalchemy.orm import Mapped, mapped_column
 
 from source.application_startup.database_connection import DatabaseBaseModel
@@ -32,10 +28,7 @@ class UserAccount(DatabaseBaseModel):
     driver_id: Mapped[int | None] = mapped_column(
         ForeignKey("drivers.id"), unique=True, nullable=True, index=True
     )
-<<<<<<< HEAD
     is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
-=======
->>>>>>> 8b2d77ce78de4ecc024e41e576d67e9f1ba9f407
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         default=lambda: datetime.now(timezone.utc),

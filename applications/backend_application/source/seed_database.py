@@ -187,7 +187,6 @@ def seed_drivers(session):
     mumbai_loc = session.query(ServiceLocation.id).filter(ServiceLocation.city == "Mumbai").scalar()
 
     drivers = [
-<<<<<<< HEAD
         # Fleet 1 drivers
         Driver(name="Amit Kumar", email="amit.kumar@transitops.io",
                license_number="GJ-DL-2020-001", license_category="LMV-TR",
@@ -250,111 +249,6 @@ def seed_drivers(session):
                safety_score=96, status=DriverStatus.AVAILABLE,
                fleet_manager_id=fleet2.id if fleet2 else None,
                current_location_id=mumbai_loc),
-=======
-        Driver(
-            name="Amit Kumar",
-            email="amit.kumar@transitops.io",
-            license_number="GJ-DL-2020-001",
-            license_category="LMV-TR",
-            license_expiry_date=date(2027, 6, 15),
-            contact_number="+91-9876543210",
-            safety_score=92,
-            status=DriverStatus.AVAILABLE,
-        ),
-        Driver(
-            name="Suresh Yadav",
-            email="suresh.yadav@transitops.io",
-            license_number="GJ-DL-2019-002",
-            license_category="HMV",
-            license_expiry_date=date(2027, 3, 20),
-            contact_number="+91-9876543211",
-            safety_score=85,
-            status=DriverStatus.AVAILABLE,
-        ),
-        # Alex — used in Van-05 demo scenario
-        Driver(
-            name="Alex Fernandez",
-            email="alex.fernandez@transitops.io",
-            license_number="GJ-DL-2021-003",
-            license_category="LMV-TR",
-            license_expiry_date=date(2028, 1, 10),
-            contact_number="+91-9876543212",
-            safety_score=95,
-            status=DriverStatus.AVAILABLE,
-        ),
-        Driver(
-            name="Ramesh Patel",
-            email="ramesh.patel@transitops.io",
-            license_number="GJ-DL-2018-004",
-            license_category="HMV",
-            license_expiry_date=date(2027, 9, 30),
-            contact_number="+91-9876543213",
-            safety_score=78,
-            status=DriverStatus.ON_TRIP,
-        ),
-        Driver(
-            name="Mohammed Shaikh",
-            email="mohammed.shaikh@transitops.io",
-            license_number="GJ-DL-2020-005",
-            license_category="LMV",
-            license_expiry_date=date(2027, 12, 1),
-            contact_number="+91-9876543214",
-            safety_score=88,
-            status=DriverStatus.AVAILABLE,
-        ),
-        # Suspended driver — demonstrates rule enforcement
-        Driver(
-            name="Kiran Joshi",
-            email="kiran.joshi@transitops.io",
-            license_number="GJ-DL-2019-006",
-            license_category="LMV-TR",
-            license_expiry_date=date(2027, 4, 15),
-            contact_number="+91-9876543215",
-            safety_score=35,
-            status=DriverStatus.SUSPENDED,
-        ),
-        # Expired license — demonstrates rule enforcement
-        Driver(
-            name="Deepak Verma",
-            email="deepak.verma@transitops.io",
-            license_number="GJ-DL-2017-007",
-            license_category="HMV",
-            license_expiry_date=date(2024, 11, 30),
-            contact_number="+91-9876543216",
-            safety_score=72,
-            status=DriverStatus.AVAILABLE,
-        ),
-        Driver(
-            name="Nilesh Shah",
-            email="nilesh.shah@transitops.io",
-            license_number="GJ-DL-2021-008",
-            license_category="LMV",
-            license_expiry_date=date(2028, 7, 20),
-            contact_number="+91-9876543217",
-            safety_score=90,
-            status=DriverStatus.OFF_DUTY,
-        ),
-        Driver(
-            name="Prakash Solanki",
-            email="prakash.solanki@transitops.io",
-            license_number="GJ-DL-2020-009",
-            license_category="LMV-TR",
-            license_expiry_date=date(2027, 8, 10),
-            contact_number="+91-9876543218",
-            safety_score=82,
-            status=DriverStatus.AVAILABLE,
-        ),
-        Driver(
-            name="Sanjay Thakur",
-            email="sanjay.thakur@transitops.io",
-            license_number="GJ-DL-2022-010",
-            license_category="HMV",
-            license_expiry_date=date(2029, 2, 28),
-            contact_number="+91-9876543219",
-            safety_score=96,
-            status=DriverStatus.AVAILABLE,
-        ),
->>>>>>> 8b2d77ce78de4ecc024e41e576d67e9f1ba9f407
     ]
     for driver in drivers:
         existing = session.query(Driver).filter(
@@ -364,17 +258,13 @@ def seed_drivers(session):
             session.add(driver)
         else:
             existing.email = driver.email
-<<<<<<< HEAD
             existing.fleet_manager_id = driver.fleet_manager_id
             existing.current_location_id = driver.current_location_id
-=======
->>>>>>> 8b2d77ce78de4ecc024e41e576d67e9f1ba9f407
     session.commit()
     print("✓ Drivers seeded (10 drivers, 5 per fleet manager)")
 
 
 def link_demo_driver_account(session):
-<<<<<<< HEAD
     """Bind the demo driver login to Alex's driver record."""
     # Only link if a demo driver@transitops.io account happens to exist (legacy)
     driver_user = session.query(UserAccount).filter(UserAccount.email == "driver@transitops.io").first()
@@ -389,21 +279,6 @@ def link_demo_driver_account(session):
 # Trips
 # ---------------------------------------------------------------------------
 
-=======
-    """Idempotently bind the driver demo login to Alex's driver record."""
-    driver_user = session.query(UserAccount).filter(
-        UserAccount.email == "driver@transitops.io"
-    ).first()
-    alex_driver = session.query(Driver).filter(
-        Driver.email == "alex.fernandez@transitops.io"
-    ).first()
-    if driver_user is not None and alex_driver is not None:
-        driver_user.driver_id = alex_driver.id
-        session.commit()
-    print("Driver login linked to its driver record")
-
-
->>>>>>> 8b2d77ce78de4ecc024e41e576d67e9f1ba9f407
 def seed_trips(session):
     """10 trips across all lifecycle statuses with structured location references."""
     if session.query(Trip).count() > 0:
@@ -777,10 +652,7 @@ def run_seed():
     import source.shared_infrastructure.database_models.expense_model  # noqa: F401
     import source.shared_infrastructure.database_models.route_suggestion_model  # noqa: F401
     import source.shared_infrastructure.database_models.vehicle_document_model  # noqa: F401
-<<<<<<< HEAD
     import source.shared_infrastructure.database_models.service_location_model  # noqa: F401
-=======
->>>>>>> 8b2d77ce78de4ecc024e41e576d67e9f1ba9f407
 
     DatabaseBaseModel.metadata.create_all(bind=database_engine)
     print("✓ Database tables created/verified")

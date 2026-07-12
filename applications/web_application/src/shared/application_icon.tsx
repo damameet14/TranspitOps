@@ -1,8 +1,4 @@
-<<<<<<< HEAD
 type ApplicationIconName = 'dashboard' | 'vehicles' | 'drivers' | 'documents' | 'trips' | 'maintenance' | 'fuel' | 'expenses' | 'reports' | 'users' | 'sun' | 'moon' | 'logout';
-=======
-type ApplicationIconName = 'dashboard' | 'vehicles' | 'drivers' | 'documents' | 'trips' | 'maintenance' | 'fuel' | 'expenses' | 'reports' | 'sun' | 'moon' | 'logout';
->>>>>>> 8b2d77ce78de4ecc024e41e576d67e9f1ba9f407
 
 export default function ApplicationIcon({ name }: { name: ApplicationIconName }) {
   const paths: Record<ApplicationIconName, React.ReactNode> = {
@@ -15,10 +11,7 @@ export default function ApplicationIcon({ name }: { name: ApplicationIconName })
     fuel: <><path d="M5 22V4a2 2 0 0 1 2-2h7a2 2 0 0 1 2 2v18M3 22h15M8 6h5v5H8z"/><path d="m16 7 3 3v7a2 2 0 0 0 4 0V9l-2-2"/></>,
     expenses: <><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18M7 15h4"/></>,
     reports: <><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></>,
-<<<<<<< HEAD
     users: <><circle cx="9" cy="8" r="3"/><path d="M3 20a6 6 0 0 1 12 0M16 4a3 3 0 0 1 0 6M17 14a5 5 0 0 1 4 5"/></>,
-=======
->>>>>>> 8b2d77ce78de4ecc024e41e576d67e9f1ba9f407
     sun: <><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></>,
     moon: <path d="M20 15.5A8.5 8.5 0 0 1 8.5 4 8.5 8.5 0 1 0 20 15.5z"/>,
     logout: <><path d="M10 17l5-5-5-5M15 12H3"/><path d="M14 3h5a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-5"/></>,
