@@ -10,7 +10,6 @@ import HorizontalStory from '../components/motion/HorizontalStory';
 import VerticalColumnStory from '../components/motion/VerticalColumnStory';
 import ImmersiveZoom from '../components/motion/ImmersiveZoom';
 import PageTurnSequence from '../components/motion/PageTurnSequence';
-import TransitNetworkCanvas from '../components/webgl/TransitNetworkCanvas';
 import LottieIllustration from '../components/motion/LottieIllustration';
 import TextScramble from '../components/motion/TextScramble';
 import PixelHover from '../components/motion/PixelHover';
@@ -184,9 +183,6 @@ export default function LandingPage() {
             boxSizing: 'border-box',
           }}
         >
-          {/* Canvas overlay inside the card */}
-          <TransitNetworkCanvas />
-
           {/* Top Row: Logo & Columns */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 'var(--space-8)', zIndex: 1, pointerEvents: 'auto' }}>
             {/* Logo */}
