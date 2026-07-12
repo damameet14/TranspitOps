@@ -26,6 +26,9 @@ from source.shared_infrastructure.role_based_access_control import (
     get_current_authenticated_user,
     require_role,
 )
+from source.shared_infrastructure.transit_ops_email_notifications import (
+    notify_user_of_trip_status_change,
+)
 
 from source.modules.trip_lifecycle_management.trip_lifecycle_contracts import (
     CompleteTripRequest,
@@ -95,6 +98,7 @@ def dispatch_existing_trip(
 ) -> TripResponse:
     """Dispatch a trip (Draft → Dispatched). Fleet Manager or Driver only."""
     trip = dispatch_trip(database_session, trip_id)
+    notify_user_of_trip_status_change(current_user, trip, "dispatched")
     return _trip_to_response(trip)
 
 
@@ -110,6 +114,7 @@ def complete_existing_trip(
 ) -> TripResponse:
     """Complete a trip (Dispatched → Completed). Fleet Manager or Driver only."""
     trip = complete_trip(database_session, trip_id, complete_request)
+    notify_user_of_trip_status_change(current_user, trip, "completed")
     return _trip_to_response(trip)
 
 
@@ -124,6 +129,7 @@ def cancel_existing_trip(
 ) -> TripResponse:
     """Cancel a trip from Draft or Dispatched. Fleet Manager or Driver only."""
     trip = cancel_trip(database_session, trip_id)
+    notify_user_of_trip_status_change(current_user, trip, "cancelled")
     return _trip_to_response(trip)
 
 

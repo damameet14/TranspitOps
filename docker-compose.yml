@@ -29,6 +29,10 @@ services:
       DATABASE_URL: ${DATABASE_URL:-postgresql://transitops:transitops_dev_2026@postgres:5432/transitops}
       JWT_SECRET_KEY: ${JWT_SECRET_KEY:-change-this-to-a-random-secret-in-production}
       ROUTE_PROVIDER: ${ROUTE_PROVIDER:-rule_based}
+      BREVO_API_KEY: ${BREVO_API_KEY:-}
+      BREVO_SENDER_EMAIL: ${BREVO_SENDER_EMAIL:-}
+      BREVO_SENDER_NAME: ${BREVO_SENDER_NAME:-TransitOps}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:5173}
     depends_on:
       postgres:
         condition: service_healthy
